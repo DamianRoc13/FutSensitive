@@ -22,21 +22,18 @@ const ConnectScreen: React.FC = () => {
 
   const requestPermissions = async () => {
     if (Platform.OS === 'android') {
-      const permissions = [];
-  
       if (Platform.Version >= 31) {
-        permissions.push(
-          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,);
-        permissions.push(PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT);
+        await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        ]);
+      } else {
+        await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+        );
       }
-  
-      permissions.push(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
-  
-      const granted = await PermissionsAndroid.requestMultiple(permissions);
-  
-      return Object.values(granted).every(p => p === PermissionsAndroid.RESULTS.GRANTED);
     }
-  
     return true;
   };
 
@@ -65,7 +62,7 @@ const ConnectScreen: React.FC = () => {
     setTimeout(() => {
       BleManager.manager.stopDeviceScan();
       setScanning(false);
-    }, 10000);
+    }, 30000);
   };
 
   const connectToDevice = async (device: Device) => {

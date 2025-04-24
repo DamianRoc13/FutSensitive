@@ -2,14 +2,16 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors } from '../styles/theme';
 import LedButton from '../components/LedButton';
+import { useRoute } from '@react-navigation/native';
 
 const ControlScreen = () => {
-  const deviceName = "ESP32-FutLED"; 
+  const route = useRoute();
+  const { deviceName } = route.params as { deviceName: string };
+
   return (
     <View style={styles.container}>
       <Text style={styles.deviceName}>Conectado a: {deviceName}</Text>
 
-      
       <View style={styles.ledRow}>
         <LedButton label="L1" pin={1} />
         <View style={{ width: 60 }} />

@@ -54,8 +54,13 @@ const ConnectScreen: React.FC = () => {
         return;
       }
   
-      if (device?.name && !devices.some(d => d.id === device.id)) {
-        setDevices(prevDevices => [...prevDevices, device]);
+      if (device?.name) {
+        setDevices((prevDevices) => {
+          if (!prevDevices.some((d) => d.id === device.id)) {
+            return [...prevDevices, device];
+          }
+          return prevDevices;
+        });
       }
     });
   
@@ -64,7 +69,6 @@ const ConnectScreen: React.FC = () => {
       setScanning(false);
     }, 30000);
   };
-
   const connectToDevice = async (device: Device) => {
     setConnectingId(device.id);
     try {
@@ -110,8 +114,6 @@ const ConnectScreen: React.FC = () => {
     </View>
   );
 };
-
-
 
 const styles = StyleSheet.create({
   container: {

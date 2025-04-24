@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
+  PermissionsAndroid,
+  Platform,
 } from 'react-native';
 import BleManager from '../services/BleManager';
 import { Device } from 'react-native-ble-plx';
@@ -18,22 +20,48 @@ const ConnectScreen: React.FC = () => {
   const [connectingId, setConnectingId] = useState<string | null>(null);
   const navigation = useNavigation();
 
-  const startScan = () => {
+  const requestPermissions = async () => {
+    if (Platform.OS === 'android') {
+      const permissions = [];
+  
+      if (Platform.Version >= 31) {
+        permissions.push(
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,);
+        permissions.push(PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT);
+      }
+  
+      permissions.push(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+  
+      const granted = await PermissionsAndroid.requestMultiple(permissions);
+  
+      return Object.values(granted).every(p => p === PermissionsAndroid.RESULTS.GRANTED);
+    }
+  
+    return true;
+  };
+
+  const startScan = async () => {
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) {
+      console.warn('Permisos no concedidos');
+      return;
+    }
+  
     setDevices([]);
     setScanning(true);
-    
+  
     BleManager.manager.startDeviceScan(null, null, (error, device) => {
       if (error) {
         console.warn('Error al escanear:', error);
         setScanning(false);
         return;
       }
-
+  
       if (device?.name && !devices.some(d => d.id === device.id)) {
         setDevices(prevDevices => [...prevDevices, device]);
       }
     });
-
+  
     setTimeout(() => {
       BleManager.manager.stopDeviceScan();
       setScanning(false);

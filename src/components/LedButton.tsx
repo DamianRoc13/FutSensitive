@@ -10,11 +10,11 @@ type Props = {
 
 const LedButton: React.FC<Props> = ({ label, pin }) => {
   const handlePressIn = () => {
-    BleManager.sendCommand(`ON${pin}`);
+    BleManager.sendCommand(`1${pin}`);
   };
 
   const handlePressOut = () => {
-    BleManager.sendCommand(`OFF${pin}`);
+    BleManager.sendCommand(`0${pin}`);
   };
 
   return (

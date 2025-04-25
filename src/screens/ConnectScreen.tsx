@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
+  PermissionsAndroid,
+  Platform,
 } from 'react-native';
 import BleManager from '../services/BleManager';
 import { Device } from 'react-native-ble-plx';
@@ -18,33 +20,60 @@ const ConnectScreen: React.FC = () => {
   const [connectingId, setConnectingId] = useState<string | null>(null);
   const navigation = useNavigation();
 
-  const startScan = () => {
+  const requestPermissions = async () => {
+    if (Platform.OS === 'android') {
+      if (Platform.Version >= 31) {
+        await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        ]);
+      } else {
+        await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+        );
+      }
+    }
+    return true;
+  };
+
+  const startScan = async () => {
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) {
+      console.warn('Permisos no concedidos');
+      return;
+    }
+  
     setDevices([]);
     setScanning(true);
-    
+  
     BleManager.manager.startDeviceScan(null, null, (error, device) => {
       if (error) {
         console.warn('Error al escanear:', error);
         setScanning(false);
         return;
       }
-
-      if (device?.name && !devices.some(d => d.id === device.id)) {
-        setDevices(prevDevices => [...prevDevices, device]);
+  
+      if (device?.name) {
+        setDevices((prevDevices) => {
+          if (!prevDevices.some((d) => d.id === device.id)) {
+            return [...prevDevices, device];
+          }
+          return prevDevices;
+        });
       }
     });
-
+  
     setTimeout(() => {
       BleManager.manager.stopDeviceScan();
       setScanning(false);
     }, 10000);
   };
-
   const connectToDevice = async (device: Device) => {
     setConnectingId(device.id);
     try {
       await BleManager.connectTo(device);
-      navigation.navigate('Control', { deviceName: device.name });
+      navigation.navigate('Control', { deviceName: device.name } );
     } catch (e) {
       console.warn('Error al conectar:', e);
     } finally {
@@ -85,8 +114,6 @@ const ConnectScreen: React.FC = () => {
     </View>
   );
 };
-
-
 
 const styles = StyleSheet.create({
   container: {

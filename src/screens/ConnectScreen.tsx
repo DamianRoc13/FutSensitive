@@ -67,13 +67,13 @@ const ConnectScreen: React.FC = () => {
     setTimeout(() => {
       BleManager.manager.stopDeviceScan();
       setScanning(false);
-    }, 30000);
+    }, 10000);
   };
   const connectToDevice = async (device: Device) => {
     setConnectingId(device.id);
     try {
       await BleManager.connectTo(device);
-      navigation.navigate('Control', { deviceName: device.name });
+      navigation.navigate('Control', { deviceName: device.name } );
     } catch (e) {
       console.warn('Error al conectar:', e);
     } finally {

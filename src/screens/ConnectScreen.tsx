@@ -117,7 +117,15 @@ const ConnectScreen: React.FC = () => {
   );
   return (
     <View style={styles.container}>
-      <TouchableOpacity>{}</TouchableOpacity>
+      <TouchableOpacity
+      onPress={() => navigation.navigate('Home')}
+      >
+         <Image
+              source={require('../assets/back.png')}
+              style={{ width: 30, height: 30, alignSelf: 'flex-start'}}
+              resizeMode="contain"
+            />
+      </TouchableOpacity>
       <Text style={styles.title}>Selecciona un dispositivo</Text>
       <View style={{ alignItems: 'center', marginBottom: 25 }}>
       </View>
@@ -126,7 +134,7 @@ const ConnectScreen: React.FC = () => {
         onPress={startScan} 
         disabled={scanning}
       >
-        <Text style={styles.scanButton}>
+      <Text style={styles.scanButton}>
           {scanning ? 'Buscando...' : 'Buscar Dispositivos'}
         </Text>
       </TouchableOpacity>
@@ -148,12 +156,11 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   title: {
-    fontSize: 22,
+    fontSize: 20,
     color: colors.text,
     marginBottom: 20,
     textAlign: 'center',
     fontWeight: 'bold',
-    paddingTop: 20
   },
   scanButton: {
     backgroundColor: '#617AFA',

@@ -15,7 +15,7 @@ const HomeScreen = () => {
     <View style={styles.container}>
         <Image
         source={require('../assets/words.png')}
-        style={{ width: 200, height: 200, alignSelf: 'center', margin: 16 }}
+        style={{ width: 250, height: 250, alignSelf: 'center', margin: 16 }}
         resizeMode="contain"
       />
       <TouchableOpacity
@@ -34,17 +34,18 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingBottom: 80,
   },
   title: {
     fontSize: 32,
-    color: colors.primary,
-    marginBottom: 40,
+    color: colors.primary
   },
   button: {
     backgroundColor: '#617AFA',
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 16,
+    marginBottom: 40
   },
   buttonText: {
     color: colors.text,

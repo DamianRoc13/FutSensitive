@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import { useNavigation } from '@react-navigation/native';
 import { colors } from '../styles/theme';
+import { Text } from 'react-native-paper';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -12,12 +13,16 @@ const HomeScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>FutSensitive</Text>
+        <Image
+        source={require('../assets/words.png')}
+        style={{ width: 200, height: 200, alignSelf: 'center', margin: 16 }}
+        resizeMode="contain"
+      />
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate('Connect')}
       >
-        <Text style={styles.buttonText}>Comenzar</Text>
+        <Text variant='bodyMedium' style={{fontWeight: 'bold'}}>Conectar a un dispositivo</Text>
       </TouchableOpacity>
     </View>
   );
@@ -36,7 +41,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   button: {
-    backgroundColor: colors.primary,
+    backgroundColor: '#617AFA',
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 16,

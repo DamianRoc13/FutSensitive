@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from './src/screens/HomeScreen';
 import ConnectScreen from './src/screens/ConnectScreen';
 import ControlScreen from './src/screens/ControlScreen';
+import { Provider as PaperProvider } from 'react-native-paper';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -15,6 +16,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const App = () => {
   return (
+  <PaperProvider>
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Home" component={HomeScreen} />
@@ -22,6 +24,7 @@ const App = () => {
         <Stack.Screen name="Control" component={ControlScreen} />
       </Stack.Navigator>
     </NavigationContainer>
+  </PaperProvider>
   );
 };
 

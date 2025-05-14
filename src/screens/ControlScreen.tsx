@@ -3,10 +3,16 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors } from '../styles/theme';
 import LedButton from '../components/LedButton';
 import { useRoute } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../App';
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Control'>;
 
 const ControlScreen = () => {
   const route = useRoute();
   const { deviceName } = route.params as { deviceName: string };
+   const navigation = useNavigation<NavigationProp>();
 
   return (
     <View style={styles.container}>
@@ -27,10 +33,13 @@ const ControlScreen = () => {
       </View>
 
       <View style={styles.actions}>
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity style={styles.actionButton}
+        onPress={() => navigation.navigate('Connect')}>
           <Text style={styles.buttonText}>Desvincular</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity style={styles.actionButton}
+        onPress={() => navigation.navigate('Home')}
+        >
           <Text style={styles.buttonText}>Volver al inicio</Text>
         </TouchableOpacity>
       </View>

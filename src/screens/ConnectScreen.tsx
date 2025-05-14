@@ -1,24 +1,32 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
   FlatList,
   TouchableOpacity,
-  ActivityIndicator,
   StyleSheet,
   PermissionsAndroid,
-  Platform,
+  Platform, Image
 } from 'react-native';
 import BleManager from '../services/BleManager';
 import { Device } from 'react-native-ble-plx';
 import { colors } from '../styles/theme';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Surface, Text, Button } from 'react-native-paper';
+
+type RootStackParamList = {
+  Home: undefined;
+  Connect: undefined;
+  Control: { deviceName: string | null };
+};
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Connect'>;
 
 const ConnectScreen: React.FC = () => {
   const [devices, setDevices] = useState<Device[]>([]);
   const [scanning, setScanning] = useState(false);
   const [connectingId, setConnectingId] = useState<string | null>(null);
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const requestPermissions = async () => {
     if (Platform.OS === 'android') {
@@ -69,6 +77,7 @@ const ConnectScreen: React.FC = () => {
       setScanning(false);
     }, 10000);
   };
+
   const connectToDevice = async (device: Device) => {
     setConnectingId(device.id);
     try {
@@ -82,25 +91,42 @@ const ConnectScreen: React.FC = () => {
   };
 
   const renderDevice = ({ item }: { item: Device }) => (
-    <TouchableOpacity
-      style={styles.device}
-      onPress={() => connectToDevice(item)}
-      disabled={!!connectingId}
-    >
-      <Text style={styles.deviceName}>{item.name || 'Dispositivo sin nombre'}</Text>
-      {connectingId === item.id && <ActivityIndicator color={colors.primary} />}
-    </TouchableOpacity>
+     <Surface style={styles.itemContainer}>
+       <Image
+              source={require('../assets/bl.png')}
+              style={{ width: 40, height: 40, alignSelf: 'flex-start'}}
+              resizeMode="contain"
+            />
+      <View style={styles.iconAndText}>
+        <View>
+          <Text variant="titleMedium">{item.name}</Text>
+          <Text variant="bodyMedium" style={{ color: colors.text }}>
+            Dispositivo Bluetooth
+          </Text>
+        </View>
+      </View>
+      <Button
+        mode="contained-tonal"
+        onPress={() => connectToDevice(item)}
+        style={styles.button}
+      >
+        Vincular
+      </Button>
+    </Surface>
+        
   );
-
   return (
     <View style={styles.container}>
+      <TouchableOpacity>{}</TouchableOpacity>
       <Text style={styles.title}>Selecciona un dispositivo</Text>
+      <View style={{ alignItems: 'center', marginBottom: 25 }}>
+      </View>
       <TouchableOpacity 
         style={styles.scanButton} 
         onPress={startScan} 
         disabled={scanning}
       >
-        <Text style={styles.scanText}>
+        <Text style={styles.scanButton}>
           {scanning ? 'Buscando...' : 'Buscar Dispositivos'}
         </Text>
       </TouchableOpacity>
@@ -126,33 +152,41 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginBottom: 20,
     textAlign: 'center',
+    fontWeight: 'bold',
+    paddingTop: 20
   },
   scanButton: {
-    backgroundColor: colors.primary,
-    padding: 14,
+    backgroundColor: '#617AFA',
+    padding: 8,
     borderRadius: 12,
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 0,
   },
   scanText: {
     color: 'white',
     fontSize: 16,
   },
   list: {
+    paddingTop: 10,
     paddingBottom: 100,
   },
-  device: {
-    backgroundColor: colors.secondary,
-    padding: 16,
-    marginBottom: 10,
+  itemContainer: {
+    padding: 12,
+    marginVertical: 6,
     borderRadius: 10,
+    backgroundColor: '#1c1c1e',
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    elevation: 2,
   },
-  deviceName: {
-    color: colors.text,
-    fontSize: 16,
+  iconAndText: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  button: {
+    alignSelf: 'center',
   },
 });
 

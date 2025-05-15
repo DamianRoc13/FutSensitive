@@ -30,17 +30,20 @@ const LedButton: React.FC<Props> = ({ label, pin }) => {
 };
 
 const styles = StyleSheet.create({
-  button: {
-    backgroundColor: colors.primary,
-    padding: 20,
-    marginHorizontal: 10,
-    borderRadius: 30,
-    minWidth: 70,
+ button: {
+    width: 60,
+    height: 60,
+    borderRadius: 30, 
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
     alignItems: 'center',
+    marginHorizontal: 10,
+    elevation: 4,
   },
   label: {
-    color: colors.text,
-    fontSize: 16,
+    color: '#000',
+    fontSize: 15,
+    fontWeight: 'bold',
   },
 });
 

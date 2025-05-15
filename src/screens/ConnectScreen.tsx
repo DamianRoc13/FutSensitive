@@ -122,7 +122,7 @@ const ConnectScreen: React.FC = () => {
       >
          <Image
               source={require('../assets/back.png')}
-              style={{ width: 30, height: 30, alignSelf: 'flex-start'}}
+              style={{ width: 30, height: 30}}
               resizeMode="contain"
             />
       </TouchableOpacity>

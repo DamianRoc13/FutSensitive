@@ -7,6 +7,8 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import { Card, Button, Portal, Dialog} from 'react-native-paper';
+import BleManager from '../services/BleManager';
+import { DeviceId } from 'react-native-ble-plx';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Control'>;
 
@@ -15,10 +17,10 @@ const ControlScreen = () => {
   const { deviceName } = route.params as { deviceName: string };
    const navigation = useNavigation<NavigationProp>();
   const [visible, setVisible] = useState(false);
+  const [connectingId, setConnectingId] = useState<string | null>(null);
 
   const showDialog = () => setVisible(true);
   const hideDialog = () => setVisible(false);
-
   return (
     <View style={styles.container}>
       <Card style={styles.deviceCard}>
@@ -118,12 +120,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     marginVertical: 10,
-    gap: 27,
+    gap: 31,
   },
   lastLedRow:{
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 30,
+    gap: 37,
   },
   actions: {
     marginTop: 40,

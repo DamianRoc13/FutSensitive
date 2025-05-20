@@ -1,12 +1,12 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { colors } from '../styles/theme';
 import BleManager from '../services/BleManager';
 
 type Props = {
   label: string;
   pin: number;
 };
+
 
 const LedButton: React.FC<Props> = ({ label, pin }) => {
   const handlePressIn = () => {

@@ -75,7 +75,7 @@ const ConnectScreen: React.FC = () => {
     setTimeout(() => {
       BleManager.manager.stopDeviceScan();
       setScanning(false);
-    }, 10000);
+    }, 20000);
   };
 
   const connectToDevice = async (device: Device) => {
@@ -94,7 +94,7 @@ const ConnectScreen: React.FC = () => {
      <Surface style={styles.itemContainer}>
        <Image
               source={require('../assets/bl.png')}
-              style={{ width: 40, height: 40, alignSelf: 'flex-start'}}
+              style={{ width: 30, height: 30, alignSelf: 'flex-start'}}
               resizeMode="contain"
             />
       <View style={styles.iconAndText}>

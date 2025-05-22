@@ -17,10 +17,22 @@ const ControlScreen = () => {
   const { deviceName } = route.params as { deviceName: string };
    const navigation = useNavigation<NavigationProp>();
   const [visible, setVisible] = useState(false);
-  const [connectingId, setConnectingId] = useState<string | null>(null);
+  //const [connectingId, setConnectingId] = useState<string | null>(null);
+  const [ledStates, setLedStates]=useState([false, false, false]);
 
   const showDialog = () => setVisible(true);
   const hideDialog = () => setVisible(false);
+
+ const handleSecuentialButton = async () => {
+  for (let i = 0; i < ledStates.length; i++) {
+    BleManager.sendCommand(`1${i + 1}`);
+    setLedStates((prev) => prev.map((on, idx) => idx === i ? true : false));
+    await new Promise((resolve) => setTimeout(resolve, 1000)); 
+    BleManager.sendCommand(`0${i + 1}`);
+  }
+  setLedStates([false, false, false]); 
+};
+
   return (
     <View style={styles.container}>
       <Card style={styles.deviceCard}>
@@ -46,17 +58,19 @@ const ControlScreen = () => {
         <LedButton label="TM" pin={2} />
         <LedButton label="TD" pin={3} />
       </View>
+      <View>
+      </View>
         <View style={styles.secondledRow}>
-          <LedButton label="R1" pin={4} />
           <Image source={require('../assets/logo.png')} style={styles.logo}/>
-          <LedButton label="L1" pin={5} />
         </View>
-      <View style={styles.lastLedRow}>
-          <LedButton label="R2" pin={6} />
-        <View style={{ width: 60 }} /> 
-          <LedButton label="L2" pin={7} />
-        </View>
-
+      <View>
+        <Button 
+        onPress={handleSecuentialButton}
+        style={styles.buttonText}
+        >
+          Secuencial
+        </Button>
+      </View>
       <Portal>
          <Dialog visible={visible} onDismiss={hideDialog}>
           <Dialog.Title>Información</Dialog.Title>

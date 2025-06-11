@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ImageBackground } from 'react-native';
 import { colors } from '../styles/theme';
 import LedButton from '../components/LedButton';
 import { useRoute } from '@react-navigation/native';
@@ -8,7 +8,6 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import { Card, Button, Portal, Dialog} from 'react-native-paper';
 import BleManager from '../services/BleManager';
-import { DeviceId } from 'react-native-ble-plx';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Control'>;
 
@@ -38,8 +37,11 @@ const ControlScreen = () => {
       <Card style={styles.deviceCard}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' }}>
           <Text style={styles.title}>Dispositivo Seleccionado</Text>
-          <TouchableOpacity onPress={showDialog}>
-          <Image source={require('../assets/info.png')} style={{ width: 15, height: 15, margin: 20 }} />
+          <TouchableOpacity onPress={showDialog} style={{paddingBottom: 10}}>
+            <Image 
+              source={require('../assets/info.png')} 
+              style={{ width: 20, height: 20, margin: 20, tintColor: colors.text }} 
+            />
           </TouchableOpacity>
         </View>
         <Card.Content style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -53,19 +55,22 @@ const ControlScreen = () => {
           </Button>
         </Card.Content>
         </Card>
-      <View style={styles.firstledRow}>
-        <LedButton label="TR" pin={1} />
-        <LedButton label="TM" pin={2} />
-        <LedButton label="TD" pin={3} />
-      </View>
+      <ImageBackground 
+          source={require('../assets/arco.png')} 
+          style={styles.goalBackground}
+        >
+          <View style={styles.firstledRow}>
+            <LedButton label="TR" pin={1} />
+            <LedButton label="TM" pin={2} />
+            <LedButton label="TD" pin={3} />
+          </View>
+      </ImageBackground>
       <View>
       </View>
-        <View style={styles.secondledRow}>
-          <Image source={require('../assets/logo.png')} style={styles.logo}/>
-        </View>
       <View>
         <Button 
         onPress={handleSecuentialButton}
+        mode="contained-tonal"
         style={styles.buttonText}
         >
           Secuencial
@@ -100,6 +105,13 @@ const ControlScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  goalBackground: {
+    width: '100%',
+    height: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -107,11 +119,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  logo: {
-  width: 70,
-  height: 70,
-  resizeMode: 'contain'
-},
   deviceCard: {
   backgroundColor: '#1c1c1e',
   borderRadius: 12,
@@ -128,7 +135,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     marginVertical: 10,
-    gap: 25,
+    gap: 45,
+    paddingBottom: 180,
   },
   secondledRow: {
     flexDirection: 'row',

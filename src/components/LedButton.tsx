@@ -11,6 +11,7 @@ const LedButton: React.FC<Props> = ({ label, pin }) => {
   const [isPressed, setIsPressed] = React.useState(false);
 
   const handlePressIn = () => {
+    BleManager.sendCommand(`0${pin}`);
     BleManager.sendCommand(`1${pin}`);
     setIsPressed(true);
   };
@@ -48,7 +49,7 @@ const styles = StyleSheet.create({
     width: 70,
     height: 70,
     borderRadius: 35,
-    backgroundColor: 'rgba(0, 255, 0, 0.4)', 
+    backgroundColor: 'rgba(0, 255, 0, 0.9)', 
     zIndex: 0,
   },
   button: {

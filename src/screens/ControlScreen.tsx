@@ -24,7 +24,7 @@ const ControlScreen = () => {
   const confirmButton = async () => {
     await BleManager.disconnect();
     setShowConfirmation(false);
-    navigation.navigate('Home');
+    navigation.navigate('Connect');
   };
 
   const showConfirmationDialog = () => setShowConfirmation(true);

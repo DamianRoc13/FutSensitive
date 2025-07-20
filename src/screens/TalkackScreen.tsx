@@ -10,10 +10,11 @@ import { Card, Button, Portal, Dialog} from 'react-native-paper';
 import BleManager from '../services/BleManager';
 import { useEffect } from 'react';
 import { DeviceEventEmitter} from 'react-native';
+import LedButtonTalback from '../components/LedButtonTalback';
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Control'>;
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Talkback'>;
 
-const ControlScreen = () => {
+const TalkBackScreen = () => {
   const route = useRoute();
   const { deviceName } = route.params as { deviceName: string };
   const navigation = useNavigation<NavigationProp>();
@@ -22,6 +23,7 @@ const ControlScreen = () => {
   const { deviceId  } = route.params as { deviceId: string };
    
   const [showConfirmation, setShowConfirmation] = useState(false);
+
   const [disconnectDialog, setDisconnectDialog] = useState(false);
 
   const disconnectHandled = useRef(false);
@@ -52,6 +54,7 @@ const ControlScreen = () => {
 
   const showConfirmationDialog = () => setShowConfirmation(true);
   const hideConfirmationDialog = () => setShowConfirmation(false);
+  
 
   const showDialog = () => setVisible(true);
   const hideDialog = () => setVisible(false)
@@ -61,7 +64,7 @@ const ControlScreen = () => {
   for (let i = 0; i < ledStates.length; i++) {
     BleManager.sendCommand(`1${i + 1}`);
     setLedStates((prev) => prev.map((on, idx) => idx === i ? true : false));
-    await new Promise((resolve) => setTimeout(resolve, 2000)); 
+    await new Promise((resolve) => setTimeout(resolve, 1000)); 
     BleManager.sendCommand(`0${i + 1}`);
   }
   setLedStates([false, false, false]); 
@@ -72,29 +75,24 @@ const ControlScreen = () => {
       <Card style={styles.deviceCard}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' }}>
           <Text style={styles.title}>Dispositivo Seleccionado</Text>
-          <TouchableOpacity onPress={showDialog} style={{paddingBottom: 25}}>
+          <Button onPress={showDialog} style={{paddingBottom: 25}}>
             <Image 
               source={require('../assets/info.png')} 
               style={{ width: 20, height: 20, margin: 20 }} 
             />
-          </TouchableOpacity>
+          </Button>
         </View>
         <Card.Content style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <Text style={styles.deviceName}>{deviceName}</Text>
         </Card.Content>
         </Card>
-      <ImageBackground 
-          source={require('../assets/arco.png')} 
-          style={[styles.goalBackground, { marginVertical: 30 }]}
-        >
-          <View style={styles.firstledRow}>
-            <LedButton label="TM" pin={2} />
+          <View >
+            <LedButtonTalback label="Travesaño" pin={2} />
           </View>
-            <View style={styles.secondledRow}>
-            <LedButton label="TR" pin={1} />
-            <LedButton label="TL" pin={3} />
+            <View >
+            <LedButtonTalback label="Poste derecho" pin={1} />
+            <LedButtonTalback label="Poste izquiero" pin={3} />
           </View>
-      </ImageBackground>
       <View>
       </View>
       <View>
@@ -149,7 +147,6 @@ const ControlScreen = () => {
       </Dialog>
     </Portal>
 
-
       {/* <View style={styles.actions}>
         <Button 
         mode="contained-tonal"
@@ -165,12 +162,13 @@ const ControlScreen = () => {
             style={[styles.buttonText, { marginVertical: 30 }]}
             onPress={showConfirmationDialog}
             >
-            <Text style={styles.buttonText}>Desvincular</Text>
+            <Text style={styles.buttonText}>Desvincular Dispositivo</Text>
           </Button>
       </View>
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   goalBackground: {
     width: '100%',
@@ -244,4 +242,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ControlScreen;
+export default TalkBackScreen;

@@ -5,11 +5,13 @@ import HomeScreen from './src/screens/HomeScreen';
 import ConnectScreen from './src/screens/ConnectScreen';
 import ControlScreen from './src/screens/ControlScreen';
 import { Provider as PaperProvider } from 'react-native-paper';
+import TalkBackScreen from './src/screens/TalkackScreen';
 
 export type RootStackParamList = {
   Home: undefined;
   Connect: undefined;
   Control: undefined;
+  Talkback: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -22,6 +24,7 @@ const App = () => {
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Connect" component={ConnectScreen} />
         <Stack.Screen name="Control" component={ControlScreen} />
+        <Stack.Screen name="Talkback" component={TalkBackScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   </PaperProvider>

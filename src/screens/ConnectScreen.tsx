@@ -12,21 +12,36 @@ import { Device } from 'react-native-ble-plx';
 import { colors } from '../styles/theme';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Surface, Text, Button } from 'react-native-paper';
+import { Surface, Text, Button, Dialog, Portal } from 'react-native-paper';
+
 
 type RootStackParamList = {
   Home: undefined;
   Connect: undefined;
   Control: { deviceName: string | null };
+  Talkback: { deviceName: string | null };
 };
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Connect'>;
 
 const ConnectScreen: React.FC = () => {
+  const navigation = useNavigation<NavigationProp>();
   const [devices, setDevices] = useState<Device[]>([]);
   const [scanning, setScanning] = useState(false);
   const [connectingId, setConnectingId] = useState<string | null>(null);
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const [showTalkBackDialog, setShowTalkBack] = useState(true);
+  const [talkbackMode, setTalkbackMode] = useState(false);
+  const [showBluetoothDialog, setShowBluetoothDialog] = useState(false);
+  
+  //const showTalbackConfirmationDialog = () => setShowTalkBack(true);
+
+  const hideBluetoothDialog = () => setShowBluetoothDialog(false);
+  const hideTalkBackConfirmationDialog = () => setShowTalkBack(false);
+
+    const confirmTalkBack = async () => {
+    setShowTalkBack(false);
+    setTalkbackMode(true)
+  }
 
   const requestPermissions = async () => {
     if (Platform.OS === 'android') {
@@ -48,7 +63,10 @@ const ConnectScreen: React.FC = () => {
   const startScan = async () => {
     const hasPermission = await requestPermissions();
     if (!hasPermission) {
-      console.warn('Permisos no concedidos');
+      setShowBluetoothDialog(true);
+      PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+      )
       return;
     }
   
@@ -77,12 +95,18 @@ const ConnectScreen: React.FC = () => {
       setScanning(false);
     }, 20000);
   };
-
+  
   const connectToDevice = async (device: Device) => {
     setConnectingId(device.id);
     try {
+      if(talkbackMode){
+        await BleManager.connectTo(device)
+        navigation.navigate('Talkback', { deviceName: device.name });
+        return;
+      } else {
       await BleManager.connectTo(device);
       navigation.navigate('Control', { deviceName: device.name } );
+      }
     } catch (e) {
       console.warn('Error al conectar:', e);
     } finally {
@@ -90,34 +114,38 @@ const ConnectScreen: React.FC = () => {
     }
   };
 
-  const renderDevice = ({ item }: { item: Device }) => (
-     <Surface style={styles.itemContainer}>
-       <Image
-              source={require('../assets/bl.png')}
-              style={{ width: 30, height: 30, alignSelf: 'flex-start'}}
-              resizeMode="contain"
-            />
-      <View style={styles.iconAndText}>
-        <View>
-          <Text variant="titleMedium">{item.name}</Text>
-          <Text variant="bodyMedium" style={{ color: colors.text }}>
-            Dispositivo Bluetooth
-          </Text>
-        </View>
+const renderDevice = ({ item }: { item: Device }) => (
+  <Surface style={styles.itemContainer}>
+    <Image
+      source={require('../assets/bl.png')}
+      style={{ width: 25, height: 25, alignSelf: 'flex-start', paddingTop: 40 }}
+      resizeMode="contain"
+    />
+    <View style={styles.iconAndText}>
+      <View>
+        <Text variant="titleMedium" style={styles.deviceTitle}>{item.name}</Text>
+        <Text variant="bodyMedium" style={{ color: colors.text, fontSize: 13 }}>
+          Dispositivo Bluetooth
+        </Text>
       </View>
-      <Button
-        mode="contained-tonal"
-        onPress={() => connectToDevice(item)}
-        style={styles.button}
-      >
-        Vincular
-      </Button>
-    </Surface>
-        
-  );
+    </View>
+    <Button
+      icon="link"
+      mode="contained-tonal"
+      onPress={() => connectToDevice(item)}
+      style={styles.button}
+      disabled={!!connectingId}
+    >
+      <Text style={{ color: '#FFFFFF', fontSize: 12 }}>
+        {connectingId === item.id ? 'Vinculando...' : 'Vincular'}
+      </Text>
+    </Button>
+  </Surface>
+);
   return (
     <View style={styles.container}>
       <TouchableOpacity
+      key={'Regresar a la pantalla de inicio'}
       onPress={() => navigation.navigate('Home')}
       >
          <Image
@@ -136,7 +164,7 @@ const ConnectScreen: React.FC = () => {
       >
       <Text style={styles.scanButton}>
           {scanning ? 'Buscando...' : 'Buscar Dispositivos'}
-        </Text>
+      </Text>
       </TouchableOpacity>
 
       <FlatList
@@ -145,6 +173,34 @@ const ConnectScreen: React.FC = () => {
         renderItem={renderDevice}
         contentContainerStyle={styles.list}
       />
+
+            <Portal>
+               <Dialog visible={showTalkBackDialog} dismissable={false}>
+                <Dialog.Title>Confirmación para Talkback</Dialog.Title>
+                <Dialog.Content>
+                  <Text style={{ color: colors.text }}>
+                    ¿Usted hará uso de Talkback?
+                  </Text>
+                </Dialog.Content>
+                <Dialog.Actions>
+                <Button onPress={confirmTalkBack}>Sí</Button>
+                <Button onPress={hideTalkBackConfirmationDialog}>No</Button>
+                </Dialog.Actions>
+              </Dialog>
+            </Portal>
+            <Portal>
+               <Dialog visible={showBluetoothDialog} onDismiss={hideBluetoothDialog}>
+                <Dialog.Title>Activación de Bluetooth Necesaria</Dialog.Title>
+                <Dialog.Content>
+                  <Text style={{ color: colors.text }}>
+                    Para continuar, es necesario activar el Bluetooth en su dispositivo.
+                  </Text>
+                </Dialog.Content>
+                <Dialog.Actions>
+                <Button onPress={hideBluetoothDialog}>Entendido</Button>
+                </Dialog.Actions>
+              </Dialog>
+            </Portal>
     </View>
   );
 };
@@ -154,6 +210,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
     padding: 24,
+
   },
   title: {
     fontSize: 20,
@@ -161,6 +218,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
     fontWeight: 'bold',
+  },
+  deviceTitle: {
+  color: '#FFFFFF', 
+  fontWeight: "bold",
+  fontSize: 14,
   },
   scanButton: {
     backgroundColor: '#617AFA',

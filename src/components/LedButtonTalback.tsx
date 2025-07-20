@@ -7,7 +7,7 @@ type Props = {
   pin: number;
 };
 
-const LedButton: React.FC<Props> = ({ label, pin }) => {
+const LedButtonTalback: React.FC<Props> = ({ label, pin }) => {
   const [isPressed, setIsPressed] = React.useState(false);
 
   const handlePressIn = () => {
@@ -25,9 +25,10 @@ const LedButton: React.FC<Props> = ({ label, pin }) => {
     <View style={styles.container}>
       {isPressed && <View style={styles.green} />}
       <TouchableOpacity
-        style={styles.button}
+        style={styles.buttonTalback}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
+        activeOpacity={1}
       >
         <Text style={styles.label}>{label}</Text>
       </TouchableOpacity>
@@ -43,26 +44,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   green: {
+    color: '#00FF00',
     position: 'absolute',
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 100,
+    height: 40,
+    borderRadius: 15,
     backgroundColor: 'rgba(0, 255, 0, 0.9)', 
     zIndex: 0,
   },
-  button: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
-    zIndex: 1,
-  },
   buttonTalback: {
     width: 100,
-    height: 100,
+    height: 30,
     borderRadius: 10,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
@@ -77,4 +69,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LedButton;
+export default LedButtonTalback;

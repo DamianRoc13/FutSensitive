@@ -75,10 +75,10 @@ const TalkBackScreen = () => {
       <Card style={styles.deviceCard}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' }}>
           <Text style={styles.title}>Dispositivo Seleccionado</Text>
-          <Button onPress={showDialog} style={{paddingBottom: 25}}>
+          <Button onPress={showDialog} style={{paddingBottom: 25}} accessibilityLabel='Botón de Información' >
             <Image 
               source={require('../assets/info.png')} 
-              style={{ width: 20, height: 20, margin: 20 }} 
+              style={{ width: 20, height: 20, margin: 20 }}
             />
           </Button>
         </View>
@@ -102,6 +102,7 @@ const TalkBackScreen = () => {
         onPress={handleSecuentialButton}
         mode="contained-tonal"
         style={styles.buttonText}
+        accessibilityLabel='Botón para activar el modo secuencial' 
         >
           Secuencial
         </Button>

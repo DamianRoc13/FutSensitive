@@ -28,6 +28,7 @@ const LedButton: React.FC<Props> = ({ label, pin }) => {
       <TouchableOpacity
         style={styles.button}
         onPressIn={handlePressIn}
+        accessibilityLabel={`Botón de poste ${label}`}
       >
         <Text style={styles.label}>{label}</Text>
       </TouchableOpacity>

@@ -32,6 +32,7 @@ const ConnectScreen: React.FC = () => {
   const [showTalkBackDialog, setShowTalkBack] = useState(true);
   const [talkbackMode, setTalkbackMode] = useState(false);
   const [showBluetoothDialog, setShowBluetoothDialog] = useState(false);
+
   
   //const showTalbackConfirmationDialog = () => setShowTalkBack(true);
 
@@ -49,11 +50,10 @@ const ConnectScreen: React.FC = () => {
         await PermissionsAndroid.requestMultiple([
           PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
           PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
         ]);
       } else {
         await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN
         );
       }
     }
@@ -94,6 +94,11 @@ const ConnectScreen: React.FC = () => {
       BleManager.manager.stopDeviceScan();
       setScanning(false);
     }, 20000);
+  };
+
+  const stopScan = () => {
+    BleManager.manager.stopDeviceScan();
+    setScanning(false);
   };
   
   const connectToDevice = async (device: Device) => {
@@ -147,26 +152,44 @@ const renderDevice = ({ item }: { item: Device }) => (
       <TouchableOpacity
       key={'Regresar a la pantalla de inicio'}
       onPress={() => navigation.navigate('Home')}
+      accessibilityLabel='Regresar a la pantalla principal' 
       >
          <Image
               source={require('../assets/back.png')}
               style={{ width: 30, height: 30}}
               resizeMode="contain"
-            />
+          />
       </TouchableOpacity>
       <Text style={styles.title}>Selecciona un dispositivo</Text>
       <View style={{ alignItems: 'center', marginBottom: 25 }}>
       </View>
-      <TouchableOpacity 
+      <View style={styles.iconAndText}>
+      <Button 
         style={styles.scanButton} 
         onPress={startScan} 
         disabled={scanning}
+        mode="contained-tonal"
+        buttonColor={scanning ? colors.primary : '#617AFA'}
       >
-      <Text style={styles.scanButton}>
+      <Text style={[styles.scanButton]}>
           {scanning ? 'Buscando...' : 'Buscar Dispositivos'}
       </Text>
-      </TouchableOpacity>
-
+      </Button>
+      <Button
+        style={styles.stopScanButton}
+        disabled={!scanning}
+        mode="contained-tonal"
+        onPress={stopScan}
+        buttonColor={scanning ? colors.primary: '#6200ee'}
+        accessibilityLabel='Detener búsqueda de dispositivos' 
+        >
+          <Image
+              source={require('../assets/stop-button.png')}
+              style={{ width: 35, height: 35, alignSelf: 'center', paddingTop: 10 }}
+              resizeMode="center"
+          />
+      </Button>
+      </View>
       <FlatList
         data={devices}
         keyExtractor={(item) => item.id}
@@ -225,11 +248,15 @@ const styles = StyleSheet.create({
   fontSize: 14,
   },
   scanButton: {
-    backgroundColor: '#617AFA',
-    padding: 8,
+    textAlign: 'center',
+    width: 240,
+    height: 40,
     borderRadius: 12,
     alignItems: 'center',
     marginBottom: 0,
+  },
+  stopScanButton: {
+    backgroundColor: colors.background,
   },
   scanText: {
     color: 'white',

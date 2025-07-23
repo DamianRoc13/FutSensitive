@@ -75,6 +75,7 @@ const ControlScreen = () => {
             <Image 
               source={require('../assets/info.png')} 
               style={{ width: 20, height: 20, margin: 20 }} 
+              accessibilityLabel='Botón de Información' 
             />
           </TouchableOpacity>
         </View>
@@ -87,11 +88,11 @@ const ControlScreen = () => {
           style={[styles.goalBackground, { marginVertical: 30 }]}
         >
           <View style={styles.firstledRow}>
-            <LedButton label="Med" pin={2} />
+            <LedButton label="Medio" pin={2}/>
           </View>
             <View style={styles.secondledRow}>
-            <LedButton label="Der" pin={1} />
-            <LedButton label="Izq" pin={3} />
+            <LedButton label="Derecha" pin={1} />
+            <LedButton label="Izquierda" pin={3} />
           </View>
       </ImageBackground>
       <View>

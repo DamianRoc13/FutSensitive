@@ -64,7 +64,7 @@ const TalkBackScreen = () => {
   for (let i = 0; i < ledStates.length; i++) {
     BleManager.sendCommand(`1${i + 1}`);
     setLedStates((prev) => prev.map((on, idx) => idx === i ? true : false));
-    await new Promise((resolve) => setTimeout(resolve, 1000)); 
+    await new Promise((resolve) => setTimeout(resolve, 2000)); 
     BleManager.sendCommand(`0${i + 1}`);
   }
   setLedStates([false, false, false]); 
@@ -87,7 +87,7 @@ const TalkBackScreen = () => {
         </Card.Content>
         </Card>
           <View >
-            <LedButtonTalback label="Travesaño" pin={2} />
+            <LedButtonTalback label="Poste medio" pin={2} />
           </View>
             <View >
             <LedButtonTalback label="Poste derecho" pin={1} />
@@ -95,7 +95,9 @@ const TalkBackScreen = () => {
           </View>
       <View>
       </View>
-      <View>
+      <View
+      style={{paddingTop: 20}}
+      >
         <Button 
         onPress={handleSecuentialButton}
         mode="contained-tonal"
@@ -124,8 +126,8 @@ const TalkBackScreen = () => {
           <Dialog.Title>Información</Dialog.Title>
           <Dialog.Content>
            <Text style={{ color: colors.text }}>
-            Este es un dispositivo de control de luces LED. Puedes encender y apagar los LEDs presionando los botones correspondientes. 
-            <Text style={{ fontWeight: 'bold' }}> Para desvincular el dispositivo, presiona el botón "Desvincular".</Text>
+            Este es un dispositivo de control de parlantes. Puedes encender y apagar los parlantes presionando los botones correspondientes según su ubicación. 
+            <Text style={{ fontWeight: 'bold' }}> Para desvincular el dispositivo, presiona el botón "Desvincular Dispositivo".</Text>
           </Text>
           </Dialog.Content>
           <Dialog.Actions>
@@ -160,6 +162,7 @@ const TalkBackScreen = () => {
          <Button
             mode="contained-tonal"
             style={[styles.buttonText, { marginVertical: 30 }]}
+            buttonColor="#D32F2F"
             onPress={showConfirmationDialog}
             >
             <Text style={styles.buttonText}>Desvincular Dispositivo</Text>

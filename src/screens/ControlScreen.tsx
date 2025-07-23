@@ -56,7 +56,6 @@ const ControlScreen = () => {
   const showDialog = () => setVisible(true);
   const hideDialog = () => setVisible(false)
 
-
  const handleSecuentialButton = async () => {
   for (let i = 0; i < ledStates.length; i++) {
     BleManager.sendCommand(`1${i + 1}`);
@@ -88,11 +87,11 @@ const ControlScreen = () => {
           style={[styles.goalBackground, { marginVertical: 30 }]}
         >
           <View style={styles.firstledRow}>
-            <LedButton label="TM" pin={2} />
+            <LedButton label="Med" pin={2} />
           </View>
             <View style={styles.secondledRow}>
-            <LedButton label="TR" pin={1} />
-            <LedButton label="TL" pin={3} />
+            <LedButton label="Der" pin={1} />
+            <LedButton label="Izq" pin={3} />
           </View>
       </ImageBackground>
       <View>
@@ -102,6 +101,7 @@ const ControlScreen = () => {
         onPress={handleSecuentialButton}
         mode="contained-tonal"
         style={styles.buttonText}
+        buttonColor='#00ac9b'
         >
           Secuencial
         </Button>
@@ -126,8 +126,8 @@ const ControlScreen = () => {
           <Dialog.Title>Información</Dialog.Title>
           <Dialog.Content>
            <Text style={{ color: colors.text }}>
-            Este es un dispositivo de control de luces LED. Puedes encender y apagar los LEDs presionando los botones correspondientes. 
-            <Text style={{ fontWeight: 'bold' }}> Para desvincular el dispositivo, presiona el botón "Desvincular".</Text>
+            Este es un dispositivo de control de parlantes. Puedes encender y apagar los parlantes presionando los botones correspondientes. 
+            <Text style={{ fontWeight: 'bold' }}> Para desvincular el dispositivo, presiona el botón "Desvincular Dispositivo".</Text>
           </Text>
           </Dialog.Content>
           <Dialog.Actions>
@@ -164,8 +164,9 @@ const ControlScreen = () => {
             mode="contained-tonal"
             style={[styles.buttonText, { marginVertical: 30 }]}
             onPress={showConfirmationDialog}
+            buttonColor="#D32F2F"
             >
-            <Text style={styles.buttonText}>Desvincular</Text>
+            <Text style={styles.buttonText}>Desvincular Dispositivo</Text>
           </Button>
       </View>
     </View>
@@ -219,6 +220,7 @@ const styles = StyleSheet.create({
   },
  buttonText: {
     alignSelf: 'center',
+    fontWeight: 'bold',
   },
   itemContainer: {
     padding: 12,

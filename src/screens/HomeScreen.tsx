@@ -22,7 +22,7 @@ const HomeScreen = () => {
         style={styles.button}
         onPress={() => navigation.navigate('Connect')}
       >
-        <Text variant='bodyMedium' style={{fontWeight: 'bold'}}>Conectar a un dispositivo</Text>
+        <Text variant='bodyMedium' style={{fontWeight: 'bold', color: 'white'}}>Conectar a un dispositivo</Text>
       </TouchableOpacity>
     </View>
   );

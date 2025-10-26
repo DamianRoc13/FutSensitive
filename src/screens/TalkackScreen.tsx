@@ -108,7 +108,7 @@ const TalkBackScreen = () => {
         </Button>
       </View>
       <Portal>
-         <Dialog visible={showConfirmation} onDismiss={hideConfirmationDialog}>
+         <Dialog visible={showConfirmation} onDismiss={hideConfirmationDialog} style={{backgroundColor: colors.background}}>
           <Dialog.Title>¿Estás seguro de que quieres desvincular el dispositivo?</Dialog.Title>
           <Dialog.Content>
             <Text style={{ color: colors.text }}>
@@ -123,7 +123,7 @@ const TalkBackScreen = () => {
       </Portal>
 
         <Portal>
-         <Dialog visible={visible} onDismiss={hideDialog}>
+         <Dialog visible={visible} onDismiss={hideDialog} style={{backgroundColor: colors.background}}>
           <Dialog.Title>Información</Dialog.Title>
           <Dialog.Content>
            <Text style={{ color: colors.text }}>
@@ -137,7 +137,7 @@ const TalkBackScreen = () => {
         </Dialog>
       </Portal>
           <Portal>
-      <Dialog visible={disconnectDialog} dismissable={false}>
+      <Dialog visible={disconnectDialog} dismissable={false} style={{backgroundColor: colors.background}}>
         <Dialog.Title>Desconectado</Dialog.Title>
         <Dialog.Content>
           <Text style={{ color: colors.text }}>

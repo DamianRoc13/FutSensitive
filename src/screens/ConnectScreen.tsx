@@ -13,6 +13,7 @@ import { colors } from '../styles/theme';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Surface, Text, Button, Dialog, Portal } from 'react-native-paper';
+import { white } from 'react-native-paper/lib/typescript/styles/themes/v2/colors';
 
 
 type RootStackParamList = {
@@ -198,8 +199,8 @@ const renderDevice = ({ item }: { item: Device }) => (
       />
 
             <Portal>
-               <Dialog visible={showTalkBackDialog} dismissable={false}>
-                <Dialog.Title>Confirmación para Talkback</Dialog.Title>
+               <Dialog visible={showTalkBackDialog} dismissable={false} style={{backgroundColor: colors.background}}>
+                <Dialog.Title style={{color: 'white'}}>Confirmación para Talkback</Dialog.Title>
                 <Dialog.Content>
                   <Text style={{ color: colors.text }}>
                     ¿Usted hará uso de Talkback?
@@ -212,7 +213,7 @@ const renderDevice = ({ item }: { item: Device }) => (
               </Dialog>
             </Portal>
             <Portal>
-               <Dialog visible={showBluetoothDialog} onDismiss={hideBluetoothDialog}>
+               <Dialog visible={showBluetoothDialog} onDismiss={hideBluetoothDialog} style={{backgroundColor: colors.background}}>
                 <Dialog.Title>Activación de Bluetooth Necesaria</Dialog.Title>
                 <Dialog.Content>
                   <Text style={{ color: colors.text }}>
@@ -250,10 +251,12 @@ const styles = StyleSheet.create({
   scanButton: {
     textAlign: 'center',
     width: 240,
-    height: 40,
+    height: 30,
     borderRadius: 12,
     alignItems: 'center',
     marginBottom: 0,
+    backgroundColor: '#617AFA',
+    color: 'white'
   },
   stopScanButton: {
     backgroundColor: colors.background,
@@ -279,7 +282,8 @@ const styles = StyleSheet.create({
   iconAndText: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 0,
+    paddingLeft: 20
   },
   button: {
     alignSelf: 'center',

@@ -91,8 +91,8 @@ const ControlScreen = () => {
             <LedButton label="Medio" pin={2}/>
           </View>
             <View style={styles.secondledRow}>
-            <LedButton label="Derecha" pin={1} />
-            <LedButton label="Izquierda" pin={3} />
+            <LedButton label="Izquierda" pin={1} />
+            <LedButton label="Derecha" pin={3} />
           </View>
       </ImageBackground>
       <View>
@@ -109,7 +109,7 @@ const ControlScreen = () => {
       </View>
       <Portal>
          <Dialog visible={showConfirmation} onDismiss={hideConfirmationDialog} style={{backgroundColor: colors.background}}>
-          <Dialog.Title>¿Estás seguro de que quieres desvincular el dispositivo?</Dialog.Title>
+          <Dialog.Title style={{color: colors.text}}>¿Estás seguro de que quieres desvincular el dispositivo?</Dialog.Title>
           <Dialog.Content>
             <Text style={{ color: colors.text }}>
               Al desvincular el dispositivo, se perderá la conexión actual y no podrás controlarlo hasta que lo vuelvas a vincular.
@@ -124,7 +124,7 @@ const ControlScreen = () => {
 
         <Portal>
          <Dialog visible={visible} onDismiss={hideDialog} style={{backgroundColor: colors.background}}>
-          <Dialog.Title>Información</Dialog.Title>
+          <Dialog.Title style={{ color: colors.text }}>Información</Dialog.Title>
           <Dialog.Content>
            <Text style={{ color: colors.text }}>
             Este es un dispositivo de control de parlantes. Puedes encender y apagar los parlantes presionando los botones correspondientes. 

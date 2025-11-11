@@ -90,8 +90,8 @@ const TalkBackScreen = () => {
             <LedButtonTalback label="Poste medio" pin={2} />
           </View>
             <View >
-            <LedButtonTalback label="Poste derecho" pin={1} />
-            <LedButtonTalback label="Poste izquiero" pin={3} />
+            <LedButtonTalback label="Poste izquierdo" pin={1} />
+            <LedButtonTalback label="Poste derecho" pin={3} />
           </View>
       <View>
       </View>
@@ -109,7 +109,7 @@ const TalkBackScreen = () => {
       </View>
       <Portal>
          <Dialog visible={showConfirmation} onDismiss={hideConfirmationDialog} style={{backgroundColor: colors.background}}>
-          <Dialog.Title>¿Estás seguro de que quieres desvincular el dispositivo?</Dialog.Title>
+          <Dialog.Title style={{ color: colors.text }}>¿Estás seguro de que quieres desvincular el dispositivo?</Dialog.Title>
           <Dialog.Content>
             <Text style={{ color: colors.text }}>
               Al desvincular el dispositivo, se perderá la conexión actual y no podrás controlarlo hasta que lo vuelvas a vincular.
@@ -124,7 +124,7 @@ const TalkBackScreen = () => {
 
         <Portal>
          <Dialog visible={visible} onDismiss={hideDialog} style={{backgroundColor: colors.background}}>
-          <Dialog.Title>Información</Dialog.Title>
+          <Dialog.Title style={{ color: colors.text }}>Información</Dialog.Title>
           <Dialog.Content>
            <Text style={{ color: colors.text }}>
             Este es un dispositivo de control de parlantes. Puedes encender y apagar los parlantes presionando los botones correspondientes según su ubicación. 
@@ -138,7 +138,7 @@ const TalkBackScreen = () => {
       </Portal>
           <Portal>
       <Dialog visible={disconnectDialog} dismissable={false} style={{backgroundColor: colors.background}}>
-        <Dialog.Title>Desconectado</Dialog.Title>
+        <Dialog.Title style={{ color: colors.text }}>Desconectado</Dialog.Title>
         <Dialog.Content>
           <Text style={{ color: colors.text }}>
             El dispositivo se ha desconectado. Por favor, vuelve a conectarlo.

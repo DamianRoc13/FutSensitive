@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
   },
   label: {
     color: '#000',
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: 'bold',
   },
 });

@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   FlatList,
   TouchableOpacity,
   StyleSheet,
   PermissionsAndroid,
-  Platform, Image
+  Platform, Image,
+  AccessibilityInfo,
 } from 'react-native';
 import BleManager from '../services/BleManager';
 import { Device } from 'react-native-ble-plx';
@@ -13,8 +14,6 @@ import { colors } from '../styles/theme';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Surface, Text, Button, Dialog, Portal } from 'react-native-paper';
-import { white } from 'react-native-paper/lib/typescript/styles/themes/v2/colors';
-
 
 type RootStackParamList = {
   Home: undefined;
@@ -33,17 +32,22 @@ const ConnectScreen: React.FC = () => {
   const [showTalkBackDialog, setShowTalkBack] = useState(true);
   const [talkbackMode, setTalkbackMode] = useState(false);
   const [showBluetoothDialog, setShowBluetoothDialog] = useState(false);
+  const [isTalkBackEnabled, setIsTalkBackEnabled] = useState<boolean | null>(null);
+
+  useEffect(()=>{
+    AccessibilityInfo.isScreenReaderEnabled().then(setIsTalkBackEnabled);
+    const sub = AccessibilityInfo.addEventListener('screenReaderChanged', (enabled)=>setIsTalkBackEnabled(enabled));
+    return()=> {
+      if(sub?.remove) sub.remove
+    }
+  }, []);
 
   
   //const showTalbackConfirmationDialog = () => setShowTalkBack(true);
 
   const hideBluetoothDialog = () => setShowBluetoothDialog(false);
-  const hideTalkBackConfirmationDialog = () => setShowTalkBack(false);
+ // const hideTalkBackConfirmationDialog = () => setShowTalkBack(false);
 
-    const confirmTalkBack = async () => {
-    setShowTalkBack(false);
-    setTalkbackMode(true)
-  }
 
   const requestPermissions = async () => {
     if (Platform.OS === 'android') {
@@ -60,6 +64,29 @@ const ConnectScreen: React.FC = () => {
     }
     return true;
   };
+
+/*   const talbackState = async () => {
+    try {
+      const enabled = await AccessibilityInfo.isScreenReaderEnabled();
+      if (!enabled) {
+        Alert.alert(
+          'TalkBack no activado',
+          'La función TalkBack no está activada en su dispositivo.'
+        );
+        setShowTalkBack(false)
+        setTalkbackMode(false)
+      }
+      else{
+        Alert.alert(
+          'Talback Activado'
+        )
+        setTalkbackMode(true)
+      };
+    } catch (e) {
+      console.warn('Error checking screen reader status:', e);
+      return false;
+    }
+  }; */
 
   const startScan = async () => {
     const hasPermission = await requestPermissions();
@@ -101,11 +128,12 @@ const ConnectScreen: React.FC = () => {
     BleManager.manager.stopDeviceScan();
     setScanning(false);
   };
-  
+
   const connectToDevice = async (device: Device) => {
     setConnectingId(device.id);
     try {
-      if(talkbackMode){
+      const enabled = await AccessibilityInfo.isScreenReaderEnabled();
+      if(enabled){
         await BleManager.connectTo(device)
         navigation.navigate('Talkback', { deviceName: device.name });
         return;
@@ -186,7 +214,7 @@ const renderDevice = ({ item }: { item: Device }) => (
         >
           <Image
               source={require('../assets/stop-button.png')}
-              style={{ width: 35, height: 35, alignSelf: 'center', paddingTop: 10 }}
+              style={{ width: 35, height: 35, alignSelf: 'center' }}
               resizeMode="center"
           />
       </Button>
@@ -198,7 +226,7 @@ const renderDevice = ({ item }: { item: Device }) => (
         contentContainerStyle={styles.list}
       />
 
-            <Portal>
+{/*             <Portal>
                <Dialog visible={showTalkBackDialog} dismissable={false} style={{backgroundColor: colors.background}}>
                 <Dialog.Title style={{color: 'white'}}>Confirmación para Talkback</Dialog.Title>
                 <Dialog.Content>
@@ -211,7 +239,7 @@ const renderDevice = ({ item }: { item: Device }) => (
                 <Button onPress={hideTalkBackConfirmationDialog}>No</Button>
                 </Dialog.Actions>
               </Dialog>
-            </Portal>
+            </Portal> */}
             <Portal>
                <Dialog visible={showBluetoothDialog} onDismiss={hideBluetoothDialog} style={{backgroundColor: colors.background}}>
                 <Dialog.Title>Activación de Bluetooth Necesaria</Dialog.Title>
@@ -260,6 +288,10 @@ const styles = StyleSheet.create({
   },
   stopScanButton: {
     backgroundColor: colors.background,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    display: 'flex'
+
   },
   scanText: {
     color: 'white',
@@ -283,7 +315,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 0,
-    paddingLeft: 20
+    paddingLeft: 20,
+    justifyContent: 'center'
   },
   button: {
     alignSelf: 'center',

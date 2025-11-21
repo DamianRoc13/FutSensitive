@@ -15,7 +15,7 @@ class BleManagerClass {
 
   public startScan(callback: (device: Device) => void) {
     this.manager.startDeviceScan(null, null, (error, device) => {
-      if (error || !device?.name) return;
+      if (error || !device) return;
       callback(device);
     });
   }

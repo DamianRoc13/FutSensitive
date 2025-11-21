@@ -4,7 +4,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import { useNavigation } from '@react-navigation/native';
 import { colors } from '../styles/theme';
-import { Text } from 'react-native-paper';
+import { Button, Text } from 'react-native-paper';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -14,16 +14,17 @@ const HomeScreen = () => {
   return (
     <View style={styles.container}>
         <Image
-        source={require('../assets/words.png')}
-        style={{ width: 250, height: 250, alignSelf: 'center', margin: 16 }}
+        source={require('../assets/words.svg')}
+        style={{ width: 400, height: 250, alignSelf: 'center', margin: -20, justifyContent: 'center', alignItems: 'center' }}
         resizeMode="contain"
       />
-      <TouchableOpacity
+      <Button
         style={styles.button}
         onPress={() => navigation.navigate('Connect')}
+        mode='contained-tonal'
       >
-        <Text variant='bodyMedium' style={{fontWeight: 'bold', color: 'white'}}>Conectar a un dispositivo</Text>
-      </TouchableOpacity>
+        <Text allowFontScaling maxFontSizeMultiplier={2} style={{color: 'white', fontFamily: 'serif', fontWeight: 'bold'}}>Conectar a un dispositivo</Text>
+      </Button>
     </View>
   );
 };
@@ -41,10 +42,10 @@ const styles = StyleSheet.create({
     color: colors.primary
   },
   button: {
-    backgroundColor: '#617AFA',
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 16,
+    backgroundColor: '#1a40fcff',
+    paddingVertical: 3,
+    paddingHorizontal: 1,
+    borderRadius: 20,
     marginBottom: 40
   },
   buttonText: {

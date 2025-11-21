@@ -14,6 +14,8 @@ import { colors } from '../styles/theme';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Surface, Text, Button, Dialog, Portal } from 'react-native-paper';
+import Icon from "react-native-vector-icons/Ionicons";
+import { ActivityIndicator } from "react-native-paper";
 
 type RootStackParamList = {
   Home: undefined;
@@ -49,21 +51,37 @@ const ConnectScreen: React.FC = () => {
  // const hideTalkBackConfirmationDialog = () => setShowTalkBack(false);
 
 
-  const requestPermissions = async () => {
-    if (Platform.OS === 'android') {
-      if (Platform.Version >= 31) {
-        await PermissionsAndroid.requestMultiple([
-          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-          PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-        ]);
-      } else {
-        await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN
-        );
-      }
+const requestPermissions = async () => {
+  if (Platform.OS !== 'android') return true;
+
+  try {
+    if (Platform.Version >= 31) {
+      // Android 12+
+      const perms = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+        PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      ]);
+      return Object.values(perms).every(v => v === PermissionsAndroid.RESULTS.GRANTED);
+    } else {
+      // Android <= 11
+      const fine = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          title: 'Permiso de ubicación necesario',
+          message: 'Se necesita permiso de ubicación para encontrar dispositivos Bluetooth.',
+          buttonNeutral: 'Preguntar luego',
+          buttonNegative: 'Cancelar',
+          buttonPositive: 'Aceptar',
+        }
+      );
+      return fine === PermissionsAndroid.RESULTS.GRANTED;
     }
-    return true;
-  };
+  } catch (e) {
+    console.warn('Error pidiendo permisos:', e);
+    return false;
+  }
+};
 
 /*   const talbackState = async () => {
     try {
@@ -97,7 +115,6 @@ const ConnectScreen: React.FC = () => {
       )
       return;
     }
-  
     setDevices([]);
     setScanning(true);
   
@@ -107,18 +124,16 @@ const ConnectScreen: React.FC = () => {
         setScanning(false);
         return;
       }
-  
-      if (device?.name) {
-        setDevices((prevDevices) => {
-          if (!prevDevices.some((d) => d.id === device.id)) {
-            return [...prevDevices, device];
+      if (device) {
+        setDevices((prev) => {
+          if (!prev.some((d) => d.id === device.id)) {
+            return [...prev, device];
           }
-          return prevDevices;
+          return prev;
         });
       }
     });
-  
-    setTimeout(() => {
+      setTimeout(() => {
       BleManager.manager.stopDeviceScan();
       setScanning(false);
     }, 20000);
@@ -157,8 +172,8 @@ const renderDevice = ({ item }: { item: Device }) => (
     />
     <View style={styles.iconAndText}>
       <View>
-        <Text variant="titleMedium" style={styles.deviceTitle}>{item.name}</Text>
-        <Text variant="bodyMedium" style={{ color: colors.text, fontSize: 13 }}>
+        <Text variant="titleMedium" allowFontScaling maxFontSizeMultiplier={2} style={styles.deviceTitle}>{item.name}</Text>
+        <Text variant="bodyMedium" allowFontScaling maxFontSizeMultiplier={2} style={{ color: colors.text, fontSize: 13 }}>
           Dispositivo Bluetooth
         </Text>
       </View>
@@ -170,54 +185,87 @@ const renderDevice = ({ item }: { item: Device }) => (
       style={styles.button}
       disabled={!!connectingId}
     >
-      <Text style={{ color: '#FFFFFF', fontSize: 12 }}>
+      <Text allowFontScaling maxFontSizeMultiplier={2} style={{ color: '#FFFFFF', fontSize: 12 }}>
         {connectingId === item.id ? 'Vinculando...' : 'Vincular'}
       </Text>
     </Button>
   </Surface>
 );
   return (
-    <View style={styles.container}>
-      <TouchableOpacity
-      key={'Regresar a la pantalla de inicio'}
-      onPress={() => navigation.navigate('Home')}
-      accessibilityLabel='Regresar a la pantalla principal' 
-      >
-         <Image
-              source={require('../assets/back.png')}
-              style={{ width: 30, height: 30}}
-              resizeMode="contain"
-          />
-      </TouchableOpacity>
-      <Text style={styles.title}>Selecciona un dispositivo</Text>
-      <View style={{ alignItems: 'center', marginBottom: 25 }}>
-      </View>
-      <View style={styles.iconAndText}>
-      <Button 
-        style={styles.scanButton} 
-        onPress={startScan} 
-        disabled={scanning}
-        mode="contained-tonal"
-        buttonColor={scanning ? colors.primary : '#617AFA'}
-      >
-      <Text style={[styles.scanButton]}>
-          {scanning ? 'Buscando...' : 'Buscar Dispositivos'}
-      </Text>
-      </Button>
-      <Button
-        style={styles.stopScanButton}
-        disabled={!scanning}
-        mode="contained-tonal"
-        onPress={stopScan}
-        buttonColor={scanning ? colors.primary: '#6200ee'}
-        accessibilityLabel='Detener búsqueda de dispositivos' 
+    <>
+      <View style={{backgroundColor: colors.background, display: 'flex', flexDirection: 'row', justifyContent: 'space-around', paddingTop: 30}}>
+        <TouchableOpacity
+        key={'Regresar a la pantalla de inicio'}
+        onPress={() => navigation.navigate('Home')}
+        accessibilityLabel='Regresar a la pantalla principal' 
         >
-          <Image
-              source={require('../assets/stop-button.png')}
-              style={{ width: 35, height: 35, alignSelf: 'center' }}
-              resizeMode="center"
-          />
-      </Button>
+          <Icon name="chevron-back" size={24} color="#fafafaff" accessibilityLabel='Información general de GITAF'/>
+        </TouchableOpacity>
+        <Text allowFontScaling maxFontSizeMultiplier={2} style={styles.title}>Selecciona un dispositivo</Text>
+        <TouchableOpacity>
+          <Icon name="information-circle" size={24} color="#fdfdfdff" />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.container}>
+      <View style={styles.iconAndText}>
+        {scanning ? (
+          <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
+            <TouchableOpacity
+              style={{
+                width: 200,
+                height: 40,
+                borderRadius: 20,
+                alignItems: 'center',
+                marginBottom: 0,
+                backgroundColor: '#415ff8ff',
+                flexDirection: "row",
+                justifyContent: "space-evenly",
+              }}
+              disabled={true}
+            >
+              <Text allowFontScaling maxFontSizeMultiplier={2}style={{ color: "white", fontSize: 16 }}>
+                Buscando...
+              </Text>
+
+              <ActivityIndicator animating={true} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity
+              style={{
+                width: 200,
+                height: 40,
+                borderRadius: 20,
+                alignItems: 'center',
+                marginBottom: 0,
+                backgroundColor: '#1a40fcff',
+                flexDirection: "row",
+                justifyContent: "space-evenly",
+              }}
+            onPress={startScan}
+          >
+            <Text   
+              allowFontScaling
+              maxFontSizeMultiplier={2}
+              style={{ fontSize: 16 }}>
+              Buscar Dispositivos
+            </Text>
+          </TouchableOpacity>
+        )}
+        <Button
+          style={styles.stopScanButton}
+          disabled={!scanning}
+          mode="contained-tonal"
+          onPress={stopScan}
+          buttonColor={scanning ? colors.primary: '#6200ee'}
+          accessibilityLabel='Detener búsqueda de dispositivos' 
+          >
+            <Image
+                source={require('../assets/stop-button.png')}
+                style={{ width: 35, height: 35, alignSelf: 'center' }}
+                resizeMode="center"
+            />
+        </Button>
       </View>
       <FlatList
         data={devices}
@@ -254,12 +302,13 @@ const renderDevice = ({ item }: { item: Device }) => (
               </Dialog>
             </Portal>
     </View>
+  </>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1 ,
     backgroundColor: colors.background,
     padding: 24,
 
@@ -270,28 +319,31 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
     fontWeight: 'bold',
+    fontFamily: 'serif',
   },
   deviceTitle: {
   color: '#FFFFFF', 
   fontWeight: "bold",
   fontSize: 14,
+  
   },
   scanButton: {
     textAlign: 'center',
-    width: 240,
-    height: 30,
+    width: 200,
+    height: 40,
     borderRadius: 12,
     alignItems: 'center',
     marginBottom: 0,
-    backgroundColor: '#617AFA',
-    color: 'white'
+    backgroundColor: '#1a40fcff',
+    color: 'white',
+    fontFamily: 'serif',
+    fontWeight: 'bold'
   },
   stopScanButton: {
     backgroundColor: colors.background,
     alignItems: 'center',
     justifyContent: 'flex-start',
     display: 'flex'
-
   },
   scanText: {
     color: 'white',
@@ -314,8 +366,7 @@ const styles = StyleSheet.create({
   iconAndText: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 0,
-    paddingLeft: 20,
+    gap: 3,
     justifyContent: 'center'
   },
   button: {

@@ -107,7 +107,7 @@ const requestPermissions = async () => {
   }; */
 
   const handleNavigate = async()=>{
-    navigation.navigate('Control', {deviceName: 'JuanitoAlimaña'})
+    navigation.navigate('Talkback', {deviceName: 'JuanitoAlimaña'})
   }
 
   const startScan = async () => {
@@ -251,7 +251,7 @@ const renderDevice = ({ item }: { item: Device }) => (
             <Text   
               allowFontScaling
               maxFontSizeMultiplier={2}
-              style={{ fontSize: 16 }}>
+              style={{ fontSize: 16, color: "white" }}>
               Buscar Dispositivos
             </Text>
           </TouchableOpacity>
@@ -270,13 +270,13 @@ const renderDevice = ({ item }: { item: Device }) => (
                 resizeMode="center"
             />
         </Button>
-            <TouchableOpacity
+{/*             <TouchableOpacity
             onPress={handleNavigate}
             >
               <Text>
                 hi
               </Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
       </View>
       <FlatList
         data={devices}

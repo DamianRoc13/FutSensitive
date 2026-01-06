@@ -106,6 +106,10 @@ const requestPermissions = async () => {
     }
   }; */
 
+  const handleNavigate = async()=>{
+    navigation.navigate('Control', {deviceName: 'JuanitoAlimaña'})
+  }
+
   const startScan = async () => {
     const hasPermission = await requestPermissions();
     if (!hasPermission) {
@@ -117,7 +121,7 @@ const requestPermissions = async () => {
     }
     setDevices([]);
     setScanning(true);
-  
+
     BleManager.manager.startDeviceScan(null, null, (error, device) => {
       if (error) {
         console.warn('Error al escanear:', error);
@@ -266,6 +270,13 @@ const renderDevice = ({ item }: { item: Device }) => (
                 resizeMode="center"
             />
         </Button>
+            <TouchableOpacity
+            onPress={handleNavigate}
+            >
+              <Text>
+                hi
+              </Text>
+            </TouchableOpacity>
       </View>
       <FlatList
         data={devices}

@@ -6,8 +6,8 @@ class BleManagerClass {
   public readonly manager: BLE;
   private device: Device | null = null;
   private characteristic: Characteristic | null = null;
-  private readonly SERVICE_UUID = "12345678-1234-1234-1234-123456789abc";
-  private readonly CHARACTERISTIC_UUID = "abcd1234-5678-90ab-cdef-1234567890ab";
+  private readonly SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+  private readonly CHARACTERISTIC_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
 
   constructor() {
     this.manager = new BLE();

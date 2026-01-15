@@ -175,7 +175,7 @@ const TalkBackScreen = () => {
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={hideConfirmationDialog} textColor="gray">Cancelar</Button>
-            <Button onPress={confirmButton} mode="contained" buttonColor="#D32F2F">Sí</Button>
+            <Button onPress={confirmButton} mode="contained" buttonColor="#D32F2F"><Text style={{color: 'black', fontWeight: 'bold'}}>Desconectar</Text></Button>
           </Dialog.Actions>
         </Dialog>
 
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
   batteryText: {
     fontSize: 14,
     fontWeight: 'bold',
-    marginRight: 2,
+    marginRight: 2, 
   },
   
   // ESTILOS DE LAYOUT ESPACIAL

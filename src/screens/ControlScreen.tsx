@@ -81,7 +81,6 @@ const ControlScreen = () => {
                 <Text style={styles.deviceName} numberOfLines={1} adjustsFontSizeToFit>{deviceName}</Text>
             </View>
             <View style={styles.cardFooterRow}>
-                {/* Estado Conexión */}
                 <View style={styles.statusChip}>
                     <View style={styles.activeDot} />
                     <Text style={styles.statusText}>Conectado</Text>
@@ -142,15 +141,16 @@ const ControlScreen = () => {
             </Dialog.Content>
             <Dialog.Actions>
               <Button onPress={hideConfirmationDialog} textColor="gray">Cancelar</Button>
-              <Button onPress={confirmButton} mode="contained" buttonColor="#D32F2F" style={{borderRadius: 8}}>Desconectar</Button>
+              <Button onPress={confirmButton} mode="contained" buttonColor="#D32F2F" style={{borderRadius: 8}}><Text style={{color: 'black', fontWeight: 'bold'}}>Desconectar</Text></Button>
             </Dialog.Actions>
          </Dialog>
 
          <Dialog visible={visible} onDismiss={hideDialog} style={styles.dialogCard}>
-            <Dialog.Title style={styles.dialogTitle}>Información</Dialog.Title>
+            <Dialog.Title style={styles.dialogTitle}>Información General</Dialog.Title>
             <Dialog.Content>
                 <Text style={styles.dialogText}>• Panel de control para el sistema de orientación auditiva.</Text>
                 <Text style={styles.dialogText}>• Batería: Muestra el nivel de carga del dispositivo.</Text>
+                <Text style={styles.dialogText}>• Presione los botones conforme la dirección en la cual quiere que se reproduzca un sonido</Text>
             </Dialog.Content>
             <Dialog.Actions>
               <Button onPress={hideDialog} textColor="#00ac9b">Cerrar</Button>
@@ -163,7 +163,7 @@ const ControlScreen = () => {
               <Text style={styles.dialogText}>Conexión perdida.</Text>
             </Dialog.Content>
             <Dialog.Actions>
-              <Button onPress={handleDisconnectDialogClose} mode="contained" buttonColor="#00ac9b">Reconectar</Button>
+              <Button onPress={handleDisconnectDialogClose} mode="contained" buttonColor='#415ff8ff'><Text style={{color: 'white'}}>Reconectar</Text></Button>
             </Dialog.Actions>
          </Dialog>
       </Portal>
@@ -280,9 +280,8 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    paddingHorizontal: 30, 
-    paddingBottom: 20, 
+    gap: 20,
+    paddingBottom: 40, 
   },
   bottomPanel: {
     paddingHorizontal: 20,

@@ -7,6 +7,7 @@ import {
   PermissionsAndroid,
   Platform, Image,
   AccessibilityInfo,
+  Linking
 } from 'react-native';
 import BleManager from '../services/BleManager';
 import { Device } from 'react-native-ble-plx';
@@ -16,6 +17,12 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Surface, Text, Button, Dialog, Portal } from 'react-native-paper';
 import Icon from "react-native-vector-icons/Ionicons";
 import { ActivityIndicator } from "react-native-paper";
+import { 
+  checkMultiple, 
+  requestMultiple, 
+  PERMISSIONS, 
+  RESULTS 
+} from 'react-native-permissions';
 
 type RootStackParamList = {
   Home: undefined;
@@ -31,7 +38,7 @@ const ConnectScreen: React.FC = () => {
   const [devices, setDevices] = useState<Device[]>([]);
   const [scanning, setScanning] = useState(false);
   const [connectingId, setConnectingId] = useState<string | null>(null);
-  const [showBluetoothDialog, setShowBluetoothDialog] = useState(false);
+  const [showInfoDialog, setShowInfoDialog] = useState(false);
   const [isTalkBackEnabled, setIsTalkBackEnabled] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -42,9 +49,46 @@ const ConnectScreen: React.FC = () => {
     };
   }, []);
 
-  const hideBluetoothDialog = () => setShowBluetoothDialog(false);
+const requestBluetoothPermission = async (): Promise<boolean> => {
+  if (Platform.OS === 'android') {
+    try {
+      if (Platform.Version >= 31) {
+        const statuses = await requestMultiple([
+          PERMISSIONS.ANDROID.BLUETOOTH_SCAN,
+          PERMISSIONS.ANDROID.BLUETOOTH_CONNECT,
+        ]);
+        const scanGranted = statuses[PERMISSIONS.ANDROID.BLUETOOTH_SCAN] === RESULTS.GRANTED;
+        const connectGranted = statuses[PERMISSIONS.ANDROID.BLUETOOTH_CONNECT] === RESULTS.GRANTED;
 
-  const requestPermissions = async () => {
+        return scanGranted && connectGranted;
+      } 
+      
+        const statuses = await requestMultiple([
+           PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION,
+           PERMISSIONS.ANDROID.BLUETOOTH_CONNECT,
+           PERMISSIONS.ANDROID.BLUETOOTH_SCAN
+        ]);
+        
+        const fineGranted= statuses[PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION] === RESULTS.GRANTED;
+        const scanGranted = statuses[PERMISSIONS.ANDROID.BLUETOOTH_SCAN] === RESULTS.GRANTED;
+        const connectGranted = statuses[PERMISSIONS.ANDROID.BLUETOOTH_CONNECT] === RESULTS.GRANTED;
+
+        return fineGranted &&scanGranted && connectGranted
+        
+      
+    } catch (err) {
+      console.warn(err);
+      return false;
+    }
+  }
+  return true; 
+};
+
+
+  const showInfoDlg = () => setShowInfoDialog(true);
+  const hideInfoDialog = () => setShowInfoDialog(false);
+
+  /* const requestPermissions = async () => {
     if (Platform.OS !== 'android') return true;
     try {
       if (Platform.Version >= 31) {
@@ -72,11 +116,10 @@ const ConnectScreen: React.FC = () => {
       return false;
     }
   };
-
+ */
   const startScan = async () => {
-    const hasPermission = await requestPermissions();
-    if (!hasPermission) {
-      setShowBluetoothDialog(true);
+    const hasPermissions=await requestBluetoothPermission()
+    if (!hasPermissions) {
       return;
     }
     setDevices([]);
@@ -132,8 +175,8 @@ const ConnectScreen: React.FC = () => {
         <Icon name='bluetooth' style={{ color: 'white' }} size={20} />
         <View style={styles.iconAndText}>
           <View>
-            <Text variant="titleMedium" allowFontScaling maxFontSizeMultiplier={2} style={styles.deviceTitle}>
-              {item.name}
+            <Text variant="titleMedium" allowFontScaling maxFontSizeMultiplier={2} style={styles.deviceTitle} numberOfLines={1} ellipsizeMode="tail">
+              {item.name && item.name.length > 15 ? item.name.substring(0, 15) + '...' : item.name}
             </Text>
             <Text variant="bodyMedium" allowFontScaling maxFontSizeMultiplier={2} style={{ color: colors.text, fontSize: 13 }}>
               Dispositivo Bluetooth
@@ -165,52 +208,57 @@ const ConnectScreen: React.FC = () => {
           <Icon name="chevron-back" size={24} color="#fafafaff" />
         </TouchableOpacity>
         <Text allowFontScaling maxFontSizeMultiplier={2} style={styles.title}>Selecciona un dispositivo</Text>
-        <TouchableOpacity>
+        <TouchableOpacity
+          onPress={showInfoDlg}
+          accessibilityLabel='Información de ayuda'
+        >
           <Icon name="information-circle" size={24} color="#fdfdfdff" />
         </TouchableOpacity>
       </View>
 
       <View style={styles.container}>
-        <View style={styles.iconAndText}>
-          {scanning ? (
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <TouchableOpacity
-                style={[styles.scanButtonBase, { backgroundColor: '#415ff8ff' }]}
-                disabled={true}
-              >
-                <Text allowFontScaling maxFontSizeMultiplier={2} style={{ color: "white", fontSize: 16 }}>
-                  Buscando...
-                </Text>
-                <ActivityIndicator animating={true} color="#fff" />
-              </TouchableOpacity>
-            </View>
-          ) : (
+        <View style={styles.searchControls}>
+          <View style={styles.buttonsRow}>
+            {scanning ? (
+              <View style={styles.scanButtonContainer}>
+                <TouchableOpacity
+                  style={[styles.scanButtonBase, { backgroundColor: '#415ff8ff' }]}
+                  disabled={true}
+                >
+                  <Text allowFontScaling maxFontSizeMultiplier={2} style={{ color: "white", fontSize: 16 }}>
+                    Buscando...
+                  </Text>
+                  <ActivityIndicator animating={true} color="#fff" />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.scanButtonContainer}>
+                <TouchableOpacity
+                  style={[styles.scanButtonBase, { backgroundColor: '#1a40fcff' }]}
+                  onPress={startScan}
+                >
+                  <Text
+                    allowFontScaling
+                    maxFontSizeMultiplier={2}
+                    style={{ fontSize: 16, color: "white" }}>
+                    Buscar Dispositivos
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
             <TouchableOpacity
-              style={[styles.scanButtonBase, { backgroundColor: '#1a40fcff' }]}
-              onPress={startScan}
+              style={[styles.stopScanButtonTouchable, scanning ? { opacity: 1 } : { opacity: 0.5 }]}
+              disabled={!scanning}
+              onPress={stopScan}
+              accessibilityLabel='Detener búsqueda de dispositivos'
             >
-              <Text
-                allowFontScaling
-                maxFontSizeMultiplier={2}
-                style={{ fontSize: 16, color: "white" }}>
-                Buscar Dispositivos
-              </Text>
+              <Image
+                source={require('../assets/stop-button.png')}
+                style={styles.stopButtonImage}
+                resizeMode="center"
+              />
             </TouchableOpacity>
-          )}
-          <Button
-            style={styles.stopScanButton}
-            disabled={!scanning}
-            mode="contained-tonal"
-            onPress={stopScan}
-            buttonColor={scanning ? colors.primary : '#6200ee'}
-            accessibilityLabel='Detener búsqueda de dispositivos'
-          >
-            <Image
-              source={require('../assets/stop-button.png')}
-              style={{ width: 35, height: 35, alignSelf: 'center' }}
-              resizeMode="center"
-            />
-          </Button>
+          </View>
         </View>
 
         <FlatList
@@ -221,17 +269,23 @@ const ConnectScreen: React.FC = () => {
         />
 
         <Portal>
-          <Dialog visible={showBluetoothDialog} onDismiss={hideBluetoothDialog} style={{ backgroundColor: colors.background }}>
-            <Dialog.Title>
-                <Text allowFontScaling maxFontSizeMultiplier={2} style={{color: 'white', fontWeight: 'bold'}}>Activación de Bluetooth Necesaria</Text>
+          <Dialog visible={showInfoDialog} onDismiss={hideInfoDialog} style={styles.dialogCard}>
+            <Dialog.Title style={styles.dialogTitle}>
+                <Text allowFontScaling maxFontSizeMultiplier={2} style={{color: 'white', fontWeight: 'bold'}}>Información General</Text>
             </Dialog.Title>
             <Dialog.Content>
-              <Text allowFontScaling maxFontSizeMultiplier={2} style={{ color: colors.text }}>
-                Para continuar, es necesario activar el Bluetooth en su dispositivo.
+              <Text allowFontScaling maxFontSizeMultiplier={2} style={styles.dialogText}>
+                • Esta pantalla permite conectarse a dispositivos Bluetooth.
+              </Text>
+              <Text allowFontScaling maxFontSizeMultiplier={2} style={styles.dialogText}>
+                • Asegúrate de que el dispositivo esté cerca y con Bluetooth activo.
+              </Text>
+              <Text allowFontScaling maxFontSizeMultiplier={2} style={styles.dialogText}>
+                • Presiona "Buscar Dispositivos" para iniciar el escaneo.
               </Text>
             </Dialog.Content>
             <Dialog.Actions>
-              <Button onPress={hideBluetoothDialog}>Entendido</Button>
+              <Button onPress={hideInfoDialog} mode='contained' buttonColor='#1a40fcff'><Text style={{color: 'white'}}>Entendido</Text></Button>
             </Dialog.Actions>
           </Dialog>
         </Portal>
@@ -246,6 +300,42 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     padding: 24,
   },
+  searchControls: {
+    marginBottom: 20,
+  },
+  buttonsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 15,
+  },
+  scanButtonContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scanButtonBase: {
+    width: 200,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+  },
+  stopScanButtonTouchable: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#252525',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  stopButtonImage: {
+    width: 30,
+    height: 30,
+  },
   title: {
     fontSize: 20,
     color: colors.text,
@@ -258,14 +348,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: "bold",
     fontSize: 14,
-  },
-  scanButtonBase: {
-    width: 200,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    flexDirection: "row",
-    justifyContent: "space-evenly",
   },
   stopScanButton: {
     backgroundColor: colors.background,
@@ -295,6 +377,21 @@ const styles = StyleSheet.create({
   },
   button: {
     alignSelf: 'center',
+  },
+    dialogCard: {
+    backgroundColor: '#252525',
+    borderRadius: 20,
+  },
+  dialogTitle: {
+    color: '#fff',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  dialogText: {
+    color: '#ddd',
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 10,
   },
 });
 

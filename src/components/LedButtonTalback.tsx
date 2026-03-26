@@ -7,25 +7,17 @@ type Props = {
   pin: number;
 };
 
-const LedButtonTalback: React.FC<Props> = ({ label, pin }) => {
+const LedButtonTalback: React.FC<Props> = ({ pin, label }) => {
   const [isPressed, setIsPressed] = React.useState(false);
-    const [ledStates, setLedStates]=useState([false, false, false]);
 
   const handlePressIn = () => {
-    BleManager.sendCommand(`1${pin}`); 
-    setLedStates((prev) => prev.map((on, idx) => idx === 1 ? true : false));
+    BleManager.sendCommand(`${pin}1`); 
     setIsPressed(true);
     setTimeout(() => {
-    BleManager.sendCommand(`0${pin}`);
-    setLedStates((prev) => prev.map((on, idx) => idx === 1 ? false : on));
+    BleManager.sendCommand(`${pin}0`);
     setIsPressed(false);
     }, 5000);
   };
-
-/*   const handlePressOut = () => {
-    BleManager.sendCommand(`0${pin}`);
-    setIsPressed(false);
-  }; */
 
   return (
     <View style={styles.container}>
@@ -41,24 +33,23 @@ const LedButtonTalback: React.FC<Props> = ({ label, pin }) => {
 };
 const styles = StyleSheet.create({
   container: {
-    width: 60,
-    height: 60,
+    width: 150,
+    height: 50,
     marginHorizontal: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },
   green: {
-    color: '#00FF00',
     position: 'absolute',
-    width: 100,
-    height: 40,
-    borderRadius: 15,
+    width: 190,
+    height: 90,
+    borderRadius: 20,
     backgroundColor: 'rgba(0, 255, 0, 0.9)', 
     zIndex: 0,
   },
   buttonTalback: {
-    width: 100,
-    height: 30,
+    width: 150,
+    height: 50,
     borderRadius: 10,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',

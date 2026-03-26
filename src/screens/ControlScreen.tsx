@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ImageBackground, Dimensions, StatusBar, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ImageBackground, Dimensions, StatusBar, SafeAreaView, ScrollView } from 'react-native';
 import { colors } from '../styles/theme';
 import LedButton from '../components/LedButton';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -17,23 +17,40 @@ const ControlScreen = () => {
   const { deviceName } = route.params as { deviceName: string };
   const navigation = useNavigation<NavigationProp>();
   const [visible, setVisible] = useState(false);
-  const [ledStates, setLedStates] = useState([false, false, false]);
+  const [ledStates, setLedStates] = useState([false, false]);
   
-  const [batteryLevel, setBatteryLevel] = useState(85); 
+  const [batteryMaster, setBatteryMaster] = useState(85);
+  const [batterySlave1, setBatterySlave1] = useState(0);
+  const [batterySlave2, setBatterySlave2] = useState(0);
 
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [disconnectDialog, setDisconnectDialog] = useState(false);
+  const [batteryDialog, setBatteryDialog] = useState(false);
+  const [isSequenceRunning, setIsSequenceRunning] = useState(false);
 
   const disconnectHandled = useRef(false);
+  const sequenceAbortRef = useRef(false);
+  const batterySubscriptionRef = useRef<any>(null);
 
   useEffect(() => {
+    // Suscribirse a notificaciones de batería del ESP
+    batterySubscriptionRef.current = BleManager.onBatteryNotification((data) => {
+      setBatteryMaster(data.master);
+      setBatterySlave1(data.slave1);
+      setBatterySlave2(data.slave2);
+    });
+
     const disconnectListener = DeviceEventEmitter.addListener('DeviceDisconnected', () => {
       if (!disconnectHandled.current) {
         setDisconnectDialog(true);
         disconnectHandled.current = true;
       }
     });
+
     return () => {
+      if (batterySubscriptionRef.current) {
+        batterySubscriptionRef.current.remove();
+      }
       disconnectListener.remove();
       disconnectHandled.current = false;
     };
@@ -54,15 +71,40 @@ const ControlScreen = () => {
   const hideConfirmationDialog = () => setShowConfirmation(false);
   const showDialog = () => setVisible(true);
   const hideDialog = () => setVisible(false);
+  const showBatteryDialog = () => setBatteryDialog(true);
+  const hideBatteryDialog = () => setBatteryDialog(false);
 
   const handleSecuentialButton = async () => {
-    for (let i = 0; i < ledStates.length; i++) {
-      BleManager.sendCommand(`1${i + 1}`);
-      setLedStates((prev) => prev.map((on, idx) => idx === i ? true : false));
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      BleManager.sendCommand(`0${i + 1}`);
+    setIsSequenceRunning(true);
+    sequenceAbortRef.current = false;
+    
+    try {
+      // Probar solo los pines 1 y 2 (izquierdo y derecho)
+      const pins = [1, 2];
+      for (let pin of pins) {
+        if (sequenceAbortRef.current) break;
+        
+        BleManager.sendCommand(`${pin}1`);
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        
+        if (sequenceAbortRef.current) break;
+        
+        BleManager.sendCommand(`${pin}0`);
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+    } finally {
+      setLedStates([false, false]);
+      setIsSequenceRunning(false);
     }
-    setLedStates([false, false, false]);
+  };
+
+  const handleStopSequence = () => {
+    sequenceAbortRef.current = true;
+    setLedStates([false, false]);
+    setIsSequenceRunning(false);
+    // Apagar todos los LEDs (solo pines 1 y 2)
+    BleManager.sendCommand('10');
+    BleManager.sendCommand('20');
   };
 
   return (
@@ -72,9 +114,14 @@ const ControlScreen = () => {
         <Surface style={styles.dashboardCard} elevation={5}>
             <View style={styles.cardHeaderRow}>
                 <Text style={styles.cardLabel}>PANEL DE CONTROL</Text>
-                <TouchableOpacity onPress={showDialog} style={styles.infoIconTouch}>
-                    <IconButton icon="dots-horizontal" iconColor="rgba(255,255,255,0.6)" size={20} style={{margin:0}}/>
-                </TouchableOpacity>
+                <IconButton 
+                    icon="information-outline" 
+                    iconColor="rgba(255,255,255,0.6)" 
+                    size={24} 
+                    onPress={showDialog}
+                    style={{margin: 0}}
+                    accessibilityLabel="Información de ayuda"
+                />
             </View>
             <View style={styles.cardMainRow}>
                 <IconButton icon="bluetooth" iconColor="#00ac9b" size={24} style={{margin:0, marginLeft: -8}} />
@@ -85,49 +132,56 @@ const ControlScreen = () => {
                     <View style={styles.activeDot} />
                     <Text style={styles.statusText}>Conectado</Text>
                 </View>
-                <View style={styles.batteryChip}>
-                    <Text style={[styles.batteryText, { color: batteryLevel < 20 ? '#FF5252' : '#fff' }]}>
-                        {batteryLevel}%
+                <TouchableOpacity onPress={showBatteryDialog} style={styles.batteryChip}>
+                    <Text style={[styles.batteryText, { color: batteryMaster < 20 ? '#FF5252' : '#fff' }]}>
+                        {batteryMaster}%
                     </Text>
                     <IconButton 
-                        icon={batteryLevel > 20 ? "battery-70" : "battery-alert"} 
-                        iconColor={batteryLevel < 20 ? '#FF5252' : '#00E676'} 
+                        icon={batteryMaster > 20 ? "battery-70" : "battery-alert"} 
+                        iconColor={batteryMaster < 20 ? '#FF5252' : '#00E676'} 
                         size={20} 
                         style={{margin:0, marginRight: -5}}
                     />
-                </View>
+                </TouchableOpacity>
             </View>
         </Surface>
       </View>
-      <View style={styles.mainContent}>
+      <ScrollView 
+        contentContainerStyle={styles.mainContent}
+        scrollEnabled={true}
+        nestedScrollEnabled={true}
+        showsVerticalScrollIndicator={false}
+      >
           <ImageBackground
             source={require('../assets/arco.png')}
             style={styles.goalImage}
             resizeMode="contain"
           >
             <View style={styles.ledOverlay}>
-               <View style={styles.ledTopWrapper}>
-                  <LedButton label="Centro" pin={2} />
-               </View>
                <View style={styles.ledBottomWrapper}>
                   <LedButton label="Izq" pin={1} />
-                  <LedButton label="Der" pin={3} />
+                  <LedButton label="Der" pin={2} />
                </View>
             </View>
           </ImageBackground>
-      </View>
+      </ScrollView>
       <View style={styles.bottomPanel}>
-        <Button
-            mode="contained"
-            onPress={handleSecuentialButton}
-            style={styles.mainActionButton}
-            contentStyle={styles.mainActionContent}
-            labelStyle={styles.mainActionLabel}
-            icon="play-circle"
-            buttonColor="#00ac9b"
-        >
-            Iniciar Secuencia
-        </Button>
+        <View style={styles.buttonContainer}>
+          <Button
+              mode="contained"
+              onPress={isSequenceRunning ? handleStopSequence : handleSecuentialButton}
+              style={styles.mainActionButton}
+              contentStyle={styles.mainActionContent}
+              labelStyle={styles.mainActionLabel}
+              icon={isSequenceRunning ? "stop-circle" : "play-circle"}
+              buttonColor={isSequenceRunning ? '#D32F2F' : 'rgb(39, 75, 255)'}
+              accessibilityLabel={isSequenceRunning ? 'Detener Prueba Secuencial' : 'Iniciar Prueba Secuencial'}
+          >
+            <Text style={{color: 'white'}}>
+              {isSequenceRunning ? 'Detener Secuencia' : 'Iniciar Secuencia'}
+            </Text>
+          </Button>
+        </View>
         <TouchableOpacity onPress={showConfirmationDialog} style={styles.disconnectLink}>
           <Text style={styles.disconnectText}>Desvincular Dispositivo</Text>
         </TouchableOpacity>
@@ -137,7 +191,7 @@ const ControlScreen = () => {
          <Dialog visible={showConfirmation} onDismiss={hideConfirmationDialog} style={styles.dialogCard}>
             <Dialog.Title style={styles.dialogTitle}>¿Desconectar?</Dialog.Title>
             <Dialog.Content>
-              <Text style={styles.dialogText}>Se perderá la conexión con el módulo ESP32.</Text>
+              <Text style={styles.dialogText}>Se perderá la conexión con el sistema.</Text>
             </Dialog.Content>
             <Dialog.Actions>
               <Button onPress={hideConfirmationDialog} textColor="gray">Cancelar</Button>
@@ -149,11 +203,14 @@ const ControlScreen = () => {
             <Dialog.Title style={styles.dialogTitle}>Información General</Dialog.Title>
             <Dialog.Content>
                 <Text style={styles.dialogText}>• Panel de control para el sistema de orientación auditiva.</Text>
-                <Text style={styles.dialogText}>• Batería: Muestra el nivel de carga del dispositivo.</Text>
-                <Text style={styles.dialogText}>• Presione los botones conforme la dirección en la cual quiere que se reproduzca un sonido</Text>
+                <Text style={[styles.dialogText, {marginBottom: 16, fontWeight: 'bold', color: '#00ac9b'}]}>Estado de Baterías:</Text>
+                <Text style={styles.dialogText}>🔋 Master: {batteryMaster}%</Text>
+                <Text style={styles.dialogText}>🔋 Esclavo 1: {batterySlave1}%</Text>
+                <Text style={styles.dialogText}>🔋 Esclavo 2: {batterySlave2}%</Text>
+                <Text style={[styles.dialogText, {marginTop: 16}]}>• Presione el botón izquierdo o derecho para emitir un sonido en esa dirección</Text>
             </Dialog.Content>
             <Dialog.Actions>
-              <Button onPress={hideDialog} textColor="#00ac9b">Cerrar</Button>
+              <Button onPress={hideDialog} textColor='white' buttonColor='#1a40fcff'>Cerrar</Button>
             </Dialog.Actions>
          </Dialog>
          
@@ -163,7 +220,47 @@ const ControlScreen = () => {
               <Text style={styles.dialogText}>Conexión perdida.</Text>
             </Dialog.Content>
             <Dialog.Actions>
-              <Button onPress={handleDisconnectDialogClose} mode="contained" buttonColor='#415ff8ff'><Text style={{color: 'white'}}>Reconectar</Text></Button>
+              <Button onPress={handleDisconnectDialogClose} mode="contained" buttonColor='#1a40fcff' ><Text style={{color: 'white'}}>Reconectar</Text></Button>
+            </Dialog.Actions>
+         </Dialog>
+
+         <Dialog visible={batteryDialog} onDismiss={hideBatteryDialog} style={styles.dialogCard}>
+            <Dialog.Title style={styles.dialogTitle}>Estado de Baterías</Dialog.Title>
+            <Dialog.Content>
+              <View style={styles.batteryGridContainer}>
+                {/* Izquierda */}
+                <View style={styles.batteryItemCard}>
+                  <IconButton 
+                    icon="battery-high" 
+                    iconColor={batteryMaster > 50 ? '#00E676' : batteryMaster > 20 ? '#FFC107' : '#FF5252'}
+                    size={40}
+                    style={{margin: 0}}
+                  />
+                  <Text style={styles.batteryDeviceLabel}>Izquierda</Text>
+                  <Text style={[styles.batteryPercentText, { color: batteryMaster > 50 ? '#00E676' : batteryMaster > 20 ? '#FFC107' : '#FF5252' }]}>
+                    {batteryMaster}%
+                  </Text>
+                  <View style={[styles.batteryBar, { width: `${batteryMaster}%`, backgroundColor: batteryMaster > 50 ? '#00E676' : batteryMaster > 20 ? '#FFC107' : '#FF5252' }]} />
+                </View>
+
+                {/* Derecha */}
+                <View style={styles.batteryItemCard}>
+                  <IconButton 
+                    icon="battery-high" 
+                    iconColor={batterySlave1 > 50 ? '#00E676' : batterySlave1 > 20 ? '#FFC107' : '#FF5252'}
+                    size={40}
+                    style={{margin: 0}}
+                  />
+                  <Text style={styles.batteryDeviceLabel}>Derecha</Text>
+                  <Text style={[styles.batteryPercentText, { color: batterySlave1 > 50 ? '#00E676' : batterySlave1 > 20 ? '#FFC107' : '#FF5252' }]}>
+                    {batterySlave1}%
+                  </Text>
+                  <View style={[styles.batteryBar, { width: `${batterySlave1}%`, backgroundColor: batterySlave1 > 50 ? '#00E676' : batterySlave1 > 20 ? '#FFC107' : '#FF5252' }]} />
+                </View>
+              </View>
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button onPress={hideBatteryDialog} textColor='white' buttonColor='#1a40fcff'>Cerrar</Button>
             </Dialog.Actions>
          </Dialog>
       </Portal>
@@ -176,6 +273,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: colors.background,
+    display: 'flex',
   },
   headerContainer: {
     paddingHorizontal: 20,
@@ -258,34 +356,40 @@ const styles = StyleSheet.create({
     marginRight: 2,
   },
   mainContent: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingVertical: 20,
   },
   goalImage: {
     width: width * 0.9,
-    height: 250,
+    height: 300,
     justifyContent: 'center',
   },
   ledOverlay: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  ledTopWrapper: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: 20, 
+    zIndex: 1,
+    justifyContent: 'center',
   },
   ledBottomWrapper: {
     flex: 1,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    alignItems: 'center',
     gap: 20,
-    paddingBottom: 40, 
   },
   bottomPanel: {
     paddingHorizontal: 20,
     paddingBottom: 30,
+    paddingTop: 15,
+    zIndex: 10,
+    backgroundColor: colors.background,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.1)',
+  },
+  buttonContainer: {
+    minHeight: 56,
+    marginBottom: 20,
   },
   mainActionButton: {
     borderRadius: 16,
@@ -310,7 +414,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     opacity: 0.8,
   },
-
   dialogCard: {
     backgroundColor: '#252525',
     borderRadius: 20,
@@ -325,6 +428,40 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 10,
+  },
+  batteryGridContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'flex-start',
+    paddingVertical: 10,
+  },
+  batteryItemCard: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    flex: 1,
+    marginHorizontal: 6,
+  },
+  batteryDeviceLabel: {
+    color: '#aaa',
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  batteryPercentText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  batteryBar: {
+    height: 6,
+    backgroundColor: '#00E676',
+    borderRadius: 3,
+    width: '100%',
   },
 });
 

@@ -7,21 +7,18 @@ type Props = {
   pin: number;
 };
 
-const LedButton: React.FC<Props> = ({ label, pin }) => {
+const LedButton: React.FC<Props> = ({ pin, label }) => {
   const [isPressed, setIsPressed] = React.useState(false);
-    const [ledStates, setLedStates]=useState([false, false, false]);
-
 
   const handlePressIn = () => {
-    BleManager.sendCommand(`1${pin}`); 
-    setLedStates((prev) => prev.map((on, idx) => idx === 1 ? true : false));
+    BleManager.sendCommand(`${pin}1`); 
     setIsPressed(true);
     setTimeout(() => {
-    BleManager.sendCommand(`0${pin}`);
-    setLedStates((prev) => prev.map((on, idx) => idx === 1 ? false : on));
-    setIsPressed(false);
+      BleManager.sendCommand(`${pin}0`);
+      setIsPressed(false);
     }, 5000);
   };
+  
   return (
     <View style={styles.container}>
       {isPressed && <View style={styles.green} />}
@@ -45,9 +42,9 @@ const styles = StyleSheet.create({
   },
   green: {
     position: 'absolute',
-    width: 75,
-    height: 75,
-    borderRadius: 35,
+    width: 85,
+    height: 85,
+    borderRadius: 42.5,
     backgroundColor: 'rgba(0, 255, 0, 0.9)', 
     zIndex: 0,
   },

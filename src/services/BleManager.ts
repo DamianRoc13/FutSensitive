@@ -6,8 +6,10 @@ class BleManagerClass {
   public readonly manager: BLE;
   private device: Device | null = null;
   private characteristic: Characteristic | null = null;
+  private characteristicTX: Characteristic | null = null;
   private readonly SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
   private readonly CHARACTERISTIC_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
+  private readonly CHARACTERISTIC_UUID_TX = "8676d059-e970-4383-b715-464521477755";
 
   constructor() {
     this.manager = new BLE();
@@ -18,6 +20,14 @@ class BleManagerClass {
       if (error || !device) return;
       callback(device);
     });
+  }
+
+  public async enableBluetooth(){
+    try {
+      return await this.manager.enable()
+    } catch (error) {
+      console.log('Error activando el Bluetooth', error)
+    }
   }
 
   public stopScan() {
@@ -51,8 +61,12 @@ class BleManagerClass {
       const characteristic = characteristics.find(c => c.uuid === this.CHARACTERISTIC_UUID);
       if (!characteristic) throw new Error("Característica no encontrada");
 
+      const characteristicTX = characteristics.find(c => c.uuid === this.CHARACTERISTIC_UUID_TX);
+      if (!characteristicTX) throw new Error("Característica TX no encontrada");
+
       this.device = connectedDevice;
       this.characteristic = characteristic;
+      this.characteristicTX = characteristicTX;
 
       return connectedDevice;
     } catch (e) {
@@ -67,11 +81,43 @@ class BleManagerClass {
     await this.characteristic.writeWithResponse(encoded);
   }
 
+  public onBatteryNotification(callback: (data: { master: number; slave1: number; slave2: number }) => void) {
+    if (!this.characteristicTX) {
+      console.warn('CharacteristicTX no disponible');
+      return;
+    }
+
+    const subscription = this.characteristicTX.monitor((error, characteristic) => {
+      if (error) {
+        console.warn('Error al recibir notificación:', error);
+        return;
+      }
+
+      if (characteristic?.value) {
+        try {
+          const decoded = Buffer.from(characteristic.value, 'base64').toString('utf8');
+          // Parsear formato "M:XX,S1:XX,S2:XX"
+          const parts = decoded.split(',');
+          const master = parseInt(parts[0]?.split(':')[1] || '0', 10);
+          const slave1 = parseInt(parts[1]?.split(':')[1] || '0', 10);
+          const slave2 = parseInt(parts[2]?.split(':')[1] || '0', 10);
+
+          callback({ master, slave1, slave2 });
+        } catch (e) {
+          console.warn('Error parseando datos de batería:', e);
+        }
+      }
+    });
+
+    return subscription;
+  }
+
   public async disconnect() {
     if (this.device) {
       await this.device.cancelConnection();
       this.device = null;
       this.characteristic = null;
+      this.characteristicTX = null;
     }
   }
 

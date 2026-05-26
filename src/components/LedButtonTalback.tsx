@@ -7,25 +7,24 @@ type Props = {
   pin: number;
 };
 
-const LedButton: React.FC<Props> = ({ pin, label }) => {
+const LedButtonTalback: React.FC<Props> = ({ pin, label }) => {
   const [isPressed, setIsPressed] = React.useState(false);
 
   const handlePressIn = () => {
     BleManager.sendCommand(`${pin}1`); 
     setIsPressed(true);
     setTimeout(() => {
-      BleManager.sendCommand(`${pin}0`);
-      setIsPressed(false);
+    BleManager.sendCommand(`${pin}0`);
+    setIsPressed(false);
     }, 5000);
   };
-  
+
   return (
     <View style={styles.container}>
       {isPressed && <View style={styles.green} />}
       <TouchableOpacity
-        style={styles.button}
+        style={styles.buttonTalback}
         onPressIn={handlePressIn}
-        accessibilityLabel={`Botón de poste ${label}`}
       >
         <Text style={styles.label}>{label}</Text>
       </TouchableOpacity>
@@ -34,34 +33,23 @@ const LedButton: React.FC<Props> = ({ pin, label }) => {
 };
 const styles = StyleSheet.create({
   container: {
-    width: 60,
-    height: 60,
+    width: 150,
+    height: 50,
     marginHorizontal: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },
   green: {
     position: 'absolute',
-    width: 85,
-    height: 85,
-    borderRadius: 42.5,
+    width: 190,
+    height: 90,
+    borderRadius: 20,
     backgroundColor: 'rgba(0, 255, 0, 0.9)', 
     zIndex: 0,
   },
-  button: {
-    color: 'rgba(0, 255, 0, 0.9)',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 10,
-    zIndex: 1,
-  },
   buttonTalback: {
-    width: 100,
-    height: 100,
+    width: 150,
+    height: 50,
     borderRadius: 10,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
@@ -71,9 +59,8 @@ const styles = StyleSheet.create({
   },
   label: {
     color: '#000',
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 13
   },
 });
 
-export default LedButton;
+export default LedButtonTalback;
